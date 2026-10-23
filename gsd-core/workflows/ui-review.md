@@ -33,6 +33,9 @@ INTERACTION_CAPTURE=$(gsd_run query config-get workflow.ui_interaction_capture -
 [ "$INTERACTION_CAPTURE" = "true" ] || INTERACTION_CAPTURE="false"
 ```
 
+Set `UI_REPAIR=true` only when `$ARGUMENTS` contains `--fix`; otherwise set it to `false`. This
+enables one scoped implementation pass after the initial audit, followed by one re-audit.
+
 **If `response_language` is set:** All user-facing output of this workflow — narration between tool calls, status updates, progress notes, findings, questions, prompts, and explanations — MUST be presented in `{response_language}`. Technical terms, code, file paths, and subagent prompts stay in English — only user-facing output is translated.
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `commit_docs`.
@@ -59,11 +62,14 @@ UI_REVIEW_FILE=$(ls "${PHASE_DIR}"/*-UI-REVIEW.md 2>/dev/null | head -1)
 **Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Antigravity, etc.) where `AskUserQuestion` is not available.
 **If `UI_REVIEW_FILE` non-empty:**
 
-**If `--auto`:** Auto-select "View" — keep the existing UI-REVIEW.md untouched and exit without
+**If `--fix`:** Skip the choice prompt, audit the current source, then continue into the bounded
+repair flow.
+
+**If `--auto` and not `--fix`:** Auto-select "View" — keep the existing UI-REVIEW.md untouched and exit without
 re-auditing. Log: `[auto] UI-REVIEW.md exists — reusing as-is.` "Re-audit" is the regenerating
 choice; an unattended run reuses an existing artifact instead (#4776).
 
-**Otherwise:** Use AskUserQuestion:
+**If neither `--fix` nor `--auto`:** Use AskUserQuestion:
 - header: "Existing UI Review"
 - question: "UI-REVIEW.md already exists for Phase {N}."
 - options:
@@ -71,7 +77,7 @@ choice; an unattended run reuses an existing artifact instead (#4776).
   - "View — display current review and exit"
 
 If "View": display file, exit.
-If "Re-audit": continue.
+If "Re-audit": continue. `--fix` always audits the current source before making edits.
 
 ## 2. Gather Context Paths
 
@@ -94,6 +100,7 @@ Read ~/.claude/agents/gsd-ui-auditor.md for instructions.
 
 <objective>
 Conduct 6-pillar visual audit of Phase {phase_number}: {phase_name}
+{If UI_REPAIR is true: "After the initial audit, apply the bounded repair policy in your instructions, recapture/recheck once, and return the final review with before/after evidence."}
 {If UI-SPEC exists: "Audit against UI-SPEC.md design contract."}
 {If no UI-SPEC: "Audit against abstract 6-pillar standards."}
 </objective>
@@ -111,6 +118,7 @@ ${AGENT_SKILLS_UI_REVIEWER}
 phase_dir: {phase_dir}
 padded_phase: {padded_phase}
 interaction_capture: {interaction_capture}
+repair_enabled: {UI_REPAIR}
 </config>
 ```
 

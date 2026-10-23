@@ -214,7 +214,8 @@ describe('#1928 gemini removed from every runtime-name-policy surface', () => {
 describe('#1928 Antigravity preserved (shared surface with the removed gemini runtime)', () => {
   test('antigravity still resolves and keeps its GEMINI.md instruction file', () => {
     assert.strictEqual(canonicalizeRuntimeName('antigravity'), 'antigravity');
-    assert.strictEqual(canonicalizeRuntimeName('antigravity-cli'), 'antigravity');
+    assert.strictEqual(canonicalizeRuntimeName('antigravity-cli'), 'antigravity-cli');
+    assert.strictEqual(canonicalizeRuntimeName('agy'), 'antigravity-cli');
     assert.strictEqual(getProjectInstructionFile('antigravity'), 'GEMINI.md',
       'Antigravity CLI reads GEMINI.md as its contextFileName — this mapping must survive gemini removal');
     assert.strictEqual(getRuntimeLabel('antigravity'), 'Antigravity');

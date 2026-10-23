@@ -961,7 +961,7 @@ if (hasMinimal && _profileArgRaw) {
 
 function selectRuntimesFromArgs(runtimeArgs) {
   if (runtimeArgs.includes('--all')) {
-    return ['claude', 'kimi', 'kimi-code', 'kilo', 'opencode', 'pi', 'codex', 'copilot', 'antigravity', 'cursor', 'windsurf', 'augment', 'trae', 'qwen', 'hermes', 'codebuddy', 'cline', 'zcode', 'grok', 'vibe'];
+    return ['claude', 'kimi', 'kimi-code', 'kilo', 'opencode', 'pi', 'codex', 'copilot', 'antigravity', 'antigravity-cli', 'cursor', 'windsurf', 'augment', 'trae', 'qwen', 'hermes', 'codebuddy', 'cline', 'zcode', 'grok', 'vibe'];
   }
   if (runtimeArgs.includes('--both')) {
     return ['claude', 'opencode'];
@@ -975,6 +975,7 @@ function selectRuntimesFromArgs(runtimeArgs) {
   if (runtimeArgs.includes('--codex')) selected.push('codex');
   if (runtimeArgs.includes('--copilot')) selected.push('copilot');
   if (runtimeArgs.includes('--antigravity')) selected.push('antigravity');
+  if (runtimeArgs.includes('--agy') || runtimeArgs.includes('--antigravity-cli')) selected.push('antigravity-cli');
   if (runtimeArgs.includes('--cursor')) selected.push('cursor');
   if (runtimeArgs.includes('--windsurf') || runtimeArgs.includes('--devin-desktop')) selected.push('windsurf');
   if (runtimeArgs.includes('--augment')) selected.push('augment');
@@ -2473,6 +2474,25 @@ function convertClaudeToAntigravityContent(content, isGlobal = false) {
   // Runtime-neutral agent name replacement (#766)
   c = neutralizeAgentReferences(c, 'GEMINI.md');
   return c;
+}
+
+function convertClaudeToAntigravityCliContent(content, isGlobal = false) {
+  let c = filterRuntimeNotesForTarget(content, 'antigravity');
+  if (isGlobal) {
+    c = c.replace(/\$HOME\/\.claude\/skills\//g, '$HOME/.gemini/antigravity-cli/skills/');
+    c = c.replace(/~\/\.claude\/skills\//g, '~/.gemini/antigravity-cli/skills/');
+    c = c.replace(/\$HOME\/\.claude\/skills\b/g, '$HOME/.gemini/antigravity-cli/skills');
+    c = c.replace(/~\/\.claude\/skills\b/g, '~/.gemini/antigravity-cli/skills');
+    c = c.replace(/\$HOME\/\.claude\//g, '$HOME/.gemini/antigravity-cli/');
+    c = c.replace(/~\/\.claude\//g, '~/.gemini/antigravity-cli/');
+    c = c.replace(/\$HOME\/\.claude\b/g, '$HOME/.gemini/antigravity-cli');
+    c = c.replace(/~\/\.claude\b/g, '~/.gemini/antigravity-cli');
+  } else {
+    c = c.replace(/\$HOME\/\.claude\//g, '.agents/').replace(/~\/\.claude\//g, '.agents/');
+    c = c.replace(/\$HOME\/\.claude\b/g, '.agents').replace(/~\/\.claude\b/g, '.agents');
+  }
+  c = c.replace(/\.\/\.claude\//g, './.agents/').replace(/\.claude\//g, '.agents/').replace(/gsd:/g, 'gsd-');
+  return neutralizeAgentReferences(c, 'GEMINI.md');
 }
 
 // isGlobal is the 5th positional arg (3rd/4th are runtime/cmdNames passed by the skills wrapper). See runtime-artifact-layout skillsKind.
@@ -7936,6 +7956,10 @@ const RUNTIME_CONTENT_DISPATCH = {
     md: (content, ctx) => convertClaudeToAntigravityContent(content, ctx.isGlobal),
     mdReattributeAfter: true,
     js: (content, ctx) => convertClaudeToAntigravityContent(content, ctx.isGlobal),
+  },
+  'antigravity-cli': {
+    md: (content, ctx) => convertClaudeToAntigravityCliContent(content, ctx.isGlobal),
+    js: (content, ctx) => convertClaudeToAntigravityCliContent(content, ctx.isGlobal),
   },
   cursor: {
     md: (content) => convertClaudeToCursorMarkdown(content),
@@ -14380,10 +14404,11 @@ const runtimeMap = {
   '17': 'windsurf',
   '18': 'zcode',
   '19': 'grok',
-  '20': 'vibe'
+  '20': 'vibe',
+  '21': 'antigravity-cli'
 };
-const allRuntimes = ['claude', 'antigravity', 'augment', 'cline', 'codebuddy', 'codex', 'copilot', 'cursor', 'grok', 'hermes', 'kimi', 'kimi-code', 'kilo', 'opencode', 'pi', 'qwen', 'trae', 'vibe', 'windsurf', 'zcode'];
-const ALL_RUNTIMES_OPTION = '21';
+const allRuntimes = ['claude', 'antigravity', 'antigravity-cli', 'augment', 'cline', 'codebuddy', 'codex', 'copilot', 'cursor', 'grok', 'hermes', 'kimi', 'kimi-code', 'kilo', 'opencode', 'pi', 'qwen', 'trae', 'vibe', 'windsurf', 'zcode'];
+const ALL_RUNTIMES_OPTION = '22';
 
 /**
  * Build the runtime-selection prompt text shown by the interactive installer.
@@ -14411,7 +14436,8 @@ function buildRuntimePromptText() {
   ${cyan}18${reset}) ZCode        ${dim}(~/.zcode)${reset}
   ${cyan}19${reset}) Grok Build   ${dim}(~/.grok; skills in ~/.agents)${reset}
   ${cyan}20${reset}) Mistral Vibe ${dim}(~/.vibe)${reset}
-  ${cyan}21${reset}) All
+  ${cyan}21${reset}) Antigravity CLI ${dim}(~/.gemini/antigravity-cli)${reset}
+  ${cyan}22${reset}) All
 
   ${dim}Select multiple: 1,2,6 or 1 2 6${reset}
 `;
@@ -14422,7 +14448,7 @@ function buildRuntimePromptText() {
  * Pure function — exported so tests can verify split/dedupe/fallback behavior.
  *  - Accepts comma- and/or whitespace-separated choices
  *  - Deduplicates while preserving order
- *  - Maps option 19 ("All") to every runtime
+ *  - Maps the final option ("All") to every runtime
  *  - Falls back to ['claude'] when nothing valid is selected
  */
 function parseRuntimeInput(answer) {
@@ -15298,6 +15324,7 @@ module.exports = {
     stripGsdFromCopilotInstructions,
     GSD_COPILOT_HOOK_FILE,
     convertClaudeToAntigravityContent,
+    convertClaudeToAntigravityCliContent,
     convertClaudeCommandToAntigravitySkill,
     convertClaudeAgentToAntigravityAgent,
     convertClaudeCommandToClaudeSkill,

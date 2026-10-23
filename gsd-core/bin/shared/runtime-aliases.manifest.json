@@ -27,8 +27,11 @@
   ],
   "antigravity": [
     "antigravity",
-    "antigravity-cli",
     "antigravity-agent"
+  ],
+  "antigravity-cli": [
+    "antigravity-cli",
+    "agy"
   ],
   "cursor": [
     "cursor",

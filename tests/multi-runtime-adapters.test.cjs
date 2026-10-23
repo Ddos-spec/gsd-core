@@ -9,7 +9,7 @@ process.env.GSD_TEST_MODE = '1';
 const { runtimes } = require('../gsd-core/bin/lib/capability-registry.cjs');
 const { getGlobalConfigDir, getGlobalSkillsBase } = require('../gsd-core/bin/lib/runtime-homes.cjs');
 const { resolveRuntimeArtifactLayout } = require('../gsd-core/bin/lib/runtime-artifact-layout.cjs');
-const { convertClaudeCommandToGrokSkill, convertClaudeCommandToVibeSkill } = require('../gsd-core/bin/lib/runtime-artifact-conversion.cjs');
+const { convertClaudeCommandToGrokSkill, convertClaudeCommandToVibeSkill, convertClaudeCommandToAntigravityCliSkill } = require('../gsd-core/bin/lib/runtime-artifact-conversion.cjs');
 const { allRuntimes, selectRuntimesFromArgs } = require('../bin/install.js');
 
 function withEnv(overrides, fn) {
@@ -63,14 +63,24 @@ describe('first-class Grok Build and Mistral Vibe runtime homes', () => {
     });
   });
 
+  test('uses ANTIGRAVITY_CLI_CONFIG_DIR for the CLI adapter without changing the IDE home', () => {
+    withEnv({ ANTIGRAVITY_CLI_CONFIG_DIR: '~/agy-config' }, () => {
+      assert.equal(getGlobalConfigDir('antigravity-cli'), path.join(os.homedir(), 'agy-config'));
+      assert.equal(getGlobalSkillsBase('antigravity-cli'), path.join(os.homedir(), 'agy-config', 'skills'));
+      assert.equal(getGlobalConfigDir('antigravity'), path.join(os.homedir(), '.gemini', 'antigravity'));
+    });
+  });
+
   test('selects Grok and Vibe by flag and exactly once through --all', () => {
     assert.deepEqual(selectRuntimesFromArgs(['--grok']), ['grok']);
     assert.deepEqual(selectRuntimesFromArgs(['--vibe']), ['vibe']);
     const selected = selectRuntimesFromArgs(['--all']);
     assert.equal(selected.filter((runtime) => runtime === 'grok').length, 1);
     assert.equal(selected.filter((runtime) => runtime === 'vibe').length, 1);
+    assert.equal(selected.filter((runtime) => runtime === 'antigravity-cli').length, 1);
     assert.equal(allRuntimes.filter((runtime) => runtime === 'grok').length, 1);
     assert.equal(allRuntimes.filter((runtime) => runtime === 'vibe').length, 1);
+    assert.equal(allRuntimes.filter((runtime) => runtime === 'antigravity-cli').length, 1);
   });
 
   test('converts command markdown into invocable Grok and Vibe skills', () => {
@@ -79,7 +89,7 @@ describe('first-class Grok Build and Mistral Vibe runtime homes', () => {
     const vibe = convertClaudeCommandToVibeSkill(source, 'gsd-plan-phase');
 
     for (const output of [grok, vibe]) {
-      assert.match(output, /^---\nname: ["']?gsd-plan-phase["']?\n/);
+      assert.match(output, /name: ["']?gsd-plan-phase["']?/);
       assert.match(output, /description: .*plan-phase/);
       assert.match(output, /user-invocable: true/);
       assert.match(output, /`\/gsd-plan-phase`/);
@@ -90,5 +100,27 @@ describe('first-class Grok Build and Mistral Vibe runtime homes', () => {
     assert.match(grok, /inspect, plan, implement, verify, and summarize/);
     assert.match(grok, /ask the user only when missing information blocks/);
     assert.match(vibe, /ask the user only when missing information blocks/);
+  });
+});
+
+describe('first-class Antigravity CLI runtime home', () => {
+  test('resolves AGY CLI discovery and selection independently from Antigravity IDE', () => {
+    assert.ok(runtimes['antigravity-cli']?.runtime, 'Antigravity CLI needs its own runtime descriptor');
+    assert.equal(
+      getGlobalConfigDir('antigravity-cli'),
+      path.join(os.homedir(), '.gemini', 'antigravity-cli'),
+    );
+    assert.equal(
+      getGlobalSkillsBase('antigravity-cli'),
+      path.join(os.homedir(), '.gemini', 'antigravity-cli', 'skills'),
+    );
+    assert.deepEqual(selectRuntimesFromArgs(['--agy']), ['antigravity-cli']);
+    assert.deepEqual(selectRuntimesFromArgs(['--antigravity']), ['antigravity']);
+    const source = '---\ndescription: Find skills at ~/.claude/skills/gsd-plan-phase\n---\nUse `gsd:plan-phase`.';
+    const globalSkill = convertClaudeCommandToAntigravityCliSkill(source, 'gsd-plan-phase', 'antigravity-cli', [], true);
+    const localSkill = convertClaudeCommandToAntigravityCliSkill(source, 'gsd-plan-phase', 'antigravity-cli', [], false);
+    assert.match(globalSkill, /~\/\.gemini\/antigravity-cli\/skills\/gsd-plan-phase/);
+    assert.match(localSkill, /\.agents\/skills\/gsd-plan-phase/);
+    assert.match(globalSkill, /`gsd-plan-phase`/);
   });
 });

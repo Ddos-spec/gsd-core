@@ -165,7 +165,7 @@ KILO_CONFIG_DIR=~/.config/kilo-alt npx @opengsd/gsd-core@latest --kilo --global
 npx @opengsd/gsd-core@latest --codex --global
 ```
 
-Skills land in `~/.codex/skills/gsd-*/SKILL.md`. Agents are written as standalone `~/.codex/agents/gsd-*.toml` files, which Codex auto-discovers — that is the sole registration source for each role; `config.toml` only carries the shared `[agents]` dispatch-tuning scalar (`max_depth`), not a per-role table (#2406). Restart Codex (or run `codex --reload`) after install.
+Skills land in `~/.agents/skills/gsd-*/SKILL.md`, Codex's shared Agent Skills root. Agents are written as standalone `~/.codex/agents/gsd-*.toml` files, which Codex auto-discovers — that is the sole registration source for each role; `config.toml` only carries the shared `[agents]` dispatch-tuning scalar (`max_depth`), not a per-role table (#2406). Restart Codex (or run `codex --reload`) after install.
 
 **Minimum supported version:** Codex CLI 0.130.0. Earlier versions had additional skill-root scanning that can produce duplicate listings.
 
@@ -442,13 +442,53 @@ Skills land in `~/.augment/skills/` and slash command definitions land in `~/.au
 npx @opengsd/gsd-core@latest --antigravity --global
 ```
 
-The installer auto-detects the Antigravity config directory (`~/.gemini/antigravity`, `~/.gemini/antigravity-ide`, or `~/.gemini/antigravity-cli`). Uses Gemini-compatible settings policy. Global skills and agents install under `~/.gemini/config/skills/` and `~/.gemini/config/agents/` — the directories Antigravity scans for machine-local discovery (#3738); the config directory above holds settings and GSD's runtime files.
+This installs the Antigravity IDE adapter. Global skills and agents install under `~/.gemini/config/skills/` and `~/.gemini/config/agents/` — the directories the IDE scans for machine-local discovery (#3738); the config directory holds settings and GSD's runtime files.
 
 **Override the install directory:**
 
 ```bash
 ANTIGRAVITY_CONFIG_DIR=~/.gemini/antigravity-alt npx @opengsd/gsd-core@latest --antigravity --global
 ```
+
+### Antigravity CLI
+
+```bash
+npx @opengsd/gsd-core@latest --agy --global
+```
+
+The CLI adapter installs skills under `~/.gemini/antigravity-cli/skills/`, separate from the IDE discovery roots. Set `ANTIGRAVITY_CLI_CONFIG_DIR` to use another CLI config home. Project installs use `.agents/skills/`.
+
+---
+
+### Grok Build
+
+```bash
+npx @opengsd/gsd-core@latest --grok --global
+```
+
+Global skills land in `~/.grok/skills/gsd-*/SKILL.md`; local installs land in the project's `.grok/skills/`. Grok also discovers skills from `.agents/skills/` in a project and `~/.agents/skills/` globally, as described in the [Grok skills documentation](https://docs.x.ai/build/features/skills-plugins-marketplaces). Set `GROK_HOME` to change Grok's user home (including its global skills root; see [Grok settings](https://docs.x.ai/build/settings)):
+
+```bash
+GROK_HOME=~/grok-alt npx @opengsd/gsd-core@latest --grok --global
+```
+
+GSD installs its skills for Grok but does not currently project GSD-native hooks or agent profiles.
+
+---
+
+### Mistral Vibe
+
+```bash
+npx @opengsd/gsd-core@latest --vibe --global
+```
+
+Global skills land in `~/.vibe/skills/gsd-*/SKILL.md`; local installs land in the project's `.vibe/skills/`. Vibe also discovers project skills from `.agents/skills/`, as described in the [Vibe skills documentation](https://docs.mistral.ai/vibe/code/cli/skills). Set `VIBE_HOME` to change Vibe's user home (including its global skills root; see [Vibe configuration](https://docs.mistral.ai/vibe/code/cli/configuration)):
+
+```bash
+VIBE_HOME=~/vibe-alt npx @opengsd/gsd-core@latest --vibe --global
+```
+
+GSD installs its skills for Vibe but does not currently project GSD-native hooks or agent profiles.
 
 ---
 

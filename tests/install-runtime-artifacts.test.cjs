@@ -41,6 +41,9 @@ const { splitLines, joinLines } = require('../gsd-core/bin/lib/text-lines.cjs');
 const { createTempDir, cleanup, sandboxHome, writePackageSourceMarkerFixture } = require('./helpers.cjs');
 const { runNode } = require('./helpers/process-seam.cjs');
 const { INSTALL_TIMEOUT_MS } = require('./helpers/timeouts.cjs');
+// A full --all install serializes every registered runtime; measured at 143s
+// on this Windows host, so it needs a wider bound than one install class.
+const MULTI_RUNTIME_INSTALL_TIMEOUT_MS = 240_000;
 
 function useIsolatedHome(t) {
   // A Windows temp directory is normally inside the caller's home directory.
@@ -632,17 +635,17 @@ describe('installRuntimeArtifacts — skills runtimes write gsd-prefixed skill d
 });
 
 describe('installRuntimeArtifacts — --all target runtimes keep runtime-specific global skills isolated', () => {
-  test('Codex, Claude, Antigravity, Grok, and Vibe retain their own converted skill under one home', (t) => {
+  test('Codex, Claude, Antigravity IDE/CLI, Grok, and Vibe retain isolated skills under one home', (t) => {
     const home = createTempDir('gsd-all-runtime-skills-');
     t.after(() => cleanup(home));
     sandboxHome(t, home);
 
-    for (const runtime of ['codex', 'claude', 'antigravity', 'grok', 'vibe']) {
+    for (const runtime of ['codex', 'claude', 'antigravity', 'antigravity-cli', 'grok', 'vibe']) {
       installRuntimeArtifacts(runtime, getGlobalConfigDir(runtime), 'global', RESOLVED_CORE);
     }
 
     const skillsRoots = new Map();
-    for (const runtime of ['codex', 'claude', 'antigravity', 'grok', 'vibe']) {
+    for (const runtime of ['codex', 'claude', 'antigravity', 'antigravity-cli', 'grok', 'vibe']) {
       const runtimeConfigDir = getGlobalConfigDir(runtime);
       const layout = resolveRuntimeArtifactLayout(runtime, runtimeConfigDir, 'global');
       const skillsKind = layout.kinds.find((kind) => kind.kind === 'skills');
@@ -656,37 +659,48 @@ describe('installRuntimeArtifacts — --all target runtimes keep runtime-specifi
       if (runtime === 'grok') assert.match(content, /<grok_skill_adapter>/);
       if (runtime === 'vibe') assert.match(content, /<vibe_skill_adapter>/);
       if (runtime === 'antigravity') assert.doesNotMatch(content, /<(?:codex|grok|vibe)_skill_adapter>/);
+      if (runtime === 'antigravity-cli') {
+        assert.match(content, /\.gemini\/antigravity-cli\/gsd-core\/workflows/);
+        assert.doesNotMatch(content, /\.gemini\/config\/skills/);
+      }
     }
 
     assert.equal(new Set(skillsRoots.values()).size, skillsRoots.size,
       'runtime-specific converters must not overwrite another host sharing the global home');
   });
 
-  test('Grok and Vibe CLI installs rewrite workflow includes to their own GSD homes', (t) => {
+  test('Grok, Vibe, and Antigravity CLI installs rewrite workflow includes to their own GSD homes', (t) => {
     const home = createTempDir('gsd-grok-vibe-cli-global-');
     t.after(() => cleanup(home));
     sandboxHome(t, home);
 
-    const result = runNode([INSTALL_SCRIPT, '--grok', '--vibe', '--global', '--profile=core'], {
+    const result = runNode([INSTALL_SCRIPT, '--grok', '--vibe', '--agy', '--global', '--profile=core'], {
       cwd: path.join(__dirname, '..'),
       env: installerEnv({ HOME: home, USERPROFILE: home, GSD_HOME: path.join(home, '.gsd') }),
-      timeoutMs: 90_000,
+      timeoutMs: INSTALL_TIMEOUT_MS,
     });
     assert.equal(result.exitCode, 0,
-      `Grok/Vibe CLI install failed (outcome=${result.outcome}):\n${result.stdout}\n${result.stderr}`);
+      `Grok/Vibe/Antigravity CLI install failed (outcome=${result.outcome}):\n${result.stdout}\n${result.stderr}`);
 
-    for (const runtime of ['grok', 'vibe']) {
+    for (const runtime of ['grok', 'vibe', 'antigravity-cli']) {
       const skillPath = path.join(getGlobalSkillsBase(runtime), 'gsd-help', 'SKILL.md');
       assert.ok(fs.existsSync(skillPath), `${runtime} must receive gsd-help at ${skillPath}`);
       const content = fs.readFileSync(skillPath, 'utf8');
-      assert.ok(content.includes(`@~/.${runtime}/gsd-core/workflows/help.md`),
+      const runtimeWorkflow = runtime === 'antigravity-cli'
+        ? '@~/.gemini/antigravity-cli/gsd-core/workflows/help.md'
+        : `@~/.${runtime}/gsd-core/workflows/help.md`;
+      assert.ok(content.includes(runtimeWorkflow),
         `${runtime} must reference its own installed workflow tree`);
       assert.doesNotMatch(content, /@~\/.claude\/gsd-core\//,
         `${runtime} skill must not require Claude's separate install`);
+      if (runtime === 'antigravity-cli') {
+        assert.match(content, /@~\/\.gemini\/antigravity-cli\/gsd-core\/workflows\/help\.md/);
+        assert.doesNotMatch(content, /@~\/\.gemini\/config\/skills/);
+      }
     }
   });
 
-  test('--all --global CLI installs the five requested runtimes into distinct, discoverable roots', (t) => {
+  test('--all --global CLI installs representative runtimes into distinct, discoverable roots', (t) => {
     const home = createTempDir('gsd-all-cli-global-');
     t.after(() => cleanup(home));
     sandboxHome(t, home);
@@ -694,12 +708,12 @@ describe('installRuntimeArtifacts — --all target runtimes keep runtime-specifi
     const result = runNode([INSTALL_SCRIPT, '--all', '--global', '--profile=core'], {
       cwd: path.join(__dirname, '..'),
       env: installerEnv({ HOME: home, USERPROFILE: home, GSD_HOME: path.join(home, '.gsd') }),
-      timeoutMs: 240_000,
+      timeoutMs: MULTI_RUNTIME_INSTALL_TIMEOUT_MS,
     });
     assert.equal(result.exitCode, 0,
       `--all global install failed (outcome=${result.outcome}):\n${result.stdout}\n${result.stderr}`);
 
-    const runtimes = ['codex', 'claude', 'antigravity', 'grok', 'vibe'];
+    const runtimes = ['codex', 'claude', 'antigravity', 'antigravity-cli', 'grok', 'vibe'];
     const roots = runtimes.map((runtime) => getGlobalSkillsBase(runtime));
     assert.equal(new Set(roots).size, roots.length, 'each requested runtime must own a distinct global skills root');
     for (const runtime of runtimes) {
@@ -710,6 +724,10 @@ describe('installRuntimeArtifacts — --all target runtimes keep runtime-specifi
       if (runtime === 'codex') assert.match(content, /<codex_skill_adapter>/);
       if (runtime === 'grok') assert.match(content, /<grok_skill_adapter>/);
       if (runtime === 'vibe') assert.match(content, /<vibe_skill_adapter>/);
+      if (runtime === 'antigravity-cli') {
+        assert.match(content, /\.gemini\/antigravity-cli\/gsd-core\/workflows/);
+        assert.doesNotMatch(content, /\.gemini\/config\/skills/);
+      }
     }
   });
 });

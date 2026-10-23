@@ -75,7 +75,7 @@ points.
 | `tdd` | feature | full | `>=1.6.0` | `plan:pre`, `execute:post` | contribution, gate | first-party |
 | `ui` | feature | full | `>=1.6.0` | `plan:pre`, `execute:wave:post`, `verify:post` | step, gate | first-party |
 
-### Runtime capabilities (role: runtime) — 21
+### Runtime capabilities (role: runtime) — 22
 
 Runtime capabilities adapt GSD to a specific AI runtime or IDE — emitting
 skills, agents, hooks configuration, and surface files for that host. They
@@ -85,6 +85,7 @@ emission), so their extension-point and hook-kind cells are `—`.
 | id | role | tier | engines.gsd | extension points | hook kinds | source |
 |---|---|---|---|---|---|---|
 | `antigravity` | runtime | core | `>=1.6.0` | — | — | first-party |
+| `antigravity-cli` | runtime | core | `>=1.6.0` | — | — | first-party |
 | `augment` | runtime | core | `>=1.6.0` | — | — | first-party |
 | `claude` | runtime | core | `>=1.6.0` | — | — | first-party |
 | `cline` | runtime | core | `>=1.6.0` | — | — | first-party |

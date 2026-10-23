@@ -844,6 +844,7 @@ function validateTaskContentResolverFields(cap) {
 const VALID_CONVERTER_NAMES = new Set([
   // commands / skills converters (pre-existing)
   'convertClaudeCommandToAntigravitySkill',
+  'convertClaudeCommandToAntigravityCliSkill',
   'convertClaudeCommandToAugmentSkill',
   'convertClaudeCommandToClineSkill',
   'convertClaudeCommandToClaudeSkill',

@@ -12,7 +12,7 @@ const { runtimeFlags } = require('../gsd-core/bin/lib/runtime-name-policy.cjs');
 const registry = require('../gsd-core/bin/lib/capability-registry.cjs');
 
 const EXPECTED_FLAGS = [
-  'isOpencode', 'isKilo', 'isCodex', 'isCopilot', 'isAntigravity',
+  'isOpencode', 'isKilo', 'isCodex', 'isCopilot', 'isAntigravity', 'isAntigravityCli',
   'isCursor', 'isWindsurf', 'isAugment', 'isTrae', 'isQwen', 'isHermes',
   'isCodebuddy', 'isCline', 'isKimi', 'isKimiCode', 'isZcode', 'isPi', 'isGrok', 'isVibe',
 ];
@@ -51,12 +51,12 @@ test('runtimeFlags: claude / unknown / empty → all flags false (fail-closed)',
   }
 });
 
-test('runtimeFlags: all 19 flags present + boolean + the object is frozen', () => {
+test('runtimeFlags: all flags present + boolean + the object is frozen', () => {
   const flags = runtimeFlags('opencode');
   for (const f of EXPECTED_FLAGS) {
     assert.strictEqual(typeof flags[f], 'boolean', `${f} must be boolean`);
   }
-  assert.deepStrictEqual(Object.keys(flags).sort(), [...EXPECTED_FLAGS].sort(), 'exactly the 19 flags');
+  assert.deepStrictEqual(Object.keys(flags).sort(), [...EXPECTED_FLAGS].sort(), 'exactly the declared flags');
   assert.ok(Object.isFrozen(flags), 'flags object must be frozen');
 });
 
@@ -87,5 +87,5 @@ test('#2103: vscode is registered but intentionally excluded from runtimeFlags (
     assert.strictEqual(flags[f], false, `runtime 'vscode': ${f} must be false (no isVscode flag exists)`);
   }
   assert.deepStrictEqual(Object.keys(flags).sort(), [...EXPECTED_FLAGS].sort(),
-    'runtimeFlags(\'vscode\') must NOT introduce a new isVscode key — still exactly the 19 flags');
+    'runtimeFlags(\'vscode\') must NOT introduce a new isVscode key — still exactly the declared flags');
 });

@@ -1300,6 +1300,30 @@ function convertClaudeCommandToAntigravitySkill(content, skillName, _runtime = n
   return `${fm}\n${body}`;
 }
 
+function convertClaudeCommandToAntigravityCliSkill(content, skillName, _runtime = null, _cmdNames = null, isGlobal = false) {
+  let converted = filterRuntimeNotesForTarget(content, 'antigravity');
+  if (isGlobal) {
+    converted = converted.replace(/\$HOME\/\.claude\/skills\//g, '$HOME/.gemini/antigravity-cli/skills/');
+    converted = converted.replace(/~\/\.claude\/skills\//g, '~/.gemini/antigravity-cli/skills/');
+    converted = converted.replace(/\$HOME\/\.claude\/skills\b/g, '$HOME/.gemini/antigravity-cli/skills');
+    converted = converted.replace(/~\/\.claude\/skills\b/g, '~/.gemini/antigravity-cli/skills');
+    converted = converted.replace(/\$HOME\/\.claude\//g, '$HOME/.gemini/antigravity-cli/');
+    converted = converted.replace(/~\/\.claude\//g, '~/.gemini/antigravity-cli/');
+    converted = converted.replace(/\$HOME\/\.claude\b/g, '$HOME/.gemini/antigravity-cli');
+    converted = converted.replace(/~\/\.claude\b/g, '~/.gemini/antigravity-cli');
+  } else {
+    converted = converted.replace(/\$HOME\/\.claude\//g, '.agents/').replace(/~\/\.claude\//g, '.agents/');
+    converted = converted.replace(/\$HOME\/\.claude\b/g, '.agents').replace(/~\/\.claude\b/g, '.agents');
+  }
+  converted = converted.replace(/\.\/\.claude\//g, './.agents/').replace(/\.claude\//g, '.agents/').replace(/gsd:/g, 'gsd-');
+  converted = neutralizeAgentReferences(converted, 'GEMINI.md');
+  const { frontmatter, body } = extractFrontmatterAndBody(converted);
+  if (!frontmatter) return converted;
+  const name = skillName || extractFrontmatterField(frontmatter, 'name') || 'unknown';
+  const description = extractFrontmatterField(frontmatter, 'description') || '';
+  return `---\nname: ${name}\ndescription: ${yamlQuote(description)}\n---\n${body}`;
+}
+
 const GROK_SKILL_ADAPTER = `<grok_skill_adapter>
 ## End-to-End Execution
 - Continue through the requested GSD workflow: inspect, plan, implement, verify, and summarize the finished result.
@@ -4419,6 +4443,7 @@ export = {
   convertClaudeCommandToCopilotSkill,
   convertClaudeToAntigravityContent,
   convertClaudeCommandToAntigravitySkill,
+  convertClaudeCommandToAntigravityCliSkill,
   convertClaudeCommandToClaudeSkill,
   // #2873 (4b): pure, scope-free transform — applied by the one call site
   // that knows install scope (skillsKind's stage() in

@@ -1,7 +1,7 @@
 ---
 name: gsd-ui-auditor
 description: Retroactive 6-pillar visual audit of implemented frontend code. Produces scored UI-REVIEW.md. Spawned by /gsd:ui-review orchestrator.
-tools: Read, Write, Bash, Grep, Glob, Skill
+tools: Read, Write, Edit, Bash, Grep, Glob, Skill
 color: pink
 # hooks:
 #   PostToolUse:
@@ -24,6 +24,7 @@ Spawned by `/gsd:ui-review` orchestrator.
 - Audit implemented UI against UI-SPEC.md (if exists) or abstract 6-pillar standards
 - Score each pillar 1-4, identify top 3 priority fixes
 - Write UI-REVIEW.md with actionable findings
+- When explicitly enabled by `repair_enabled: true`, apply one bounded UI repair pass and re-audit it
 </role>
 
 <adversarial_stance>
@@ -41,6 +42,17 @@ Spawned by `/gsd:ui-review` orchestrator.
 - **WARNING** — pillar score 2-3 or a defect that degrades quality but doesn't break flows; fix recommended
 Every scored pillar must have at least one specific finding justifying the score.
 </adversarial_stance>
+
+<bounded_repair>
+Only repair when the workflow passes `repair_enabled: true` (`--fix`). Save the initial review, then
+fix at most three highest-priority issues directly supported by screenshots or UI-SPEC. Prefer small
+objective repairs; preserve the framework and dependencies, install no packages, and avoid unrelated
+behavior or invented brand direction. Run existing focused checks and recapture the same routes and
+viewports if a dev server was available. Re-score all pillars once and rewrite UI-REVIEW.md with
+before/after scores, changed files, checks, screenshots, and remaining issues. If browser evidence is unavailable,
+mark visual validation unverified and cap Visuals at 2/4. Stop after this single pass.
+If repair is false or absent, remain read-only except for the review artifact.
+</bounded_repair>
 
 <project_context>
 Before auditing, discover project context:

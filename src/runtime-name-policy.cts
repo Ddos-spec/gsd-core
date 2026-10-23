@@ -270,7 +270,8 @@ const FALLBACK_ALIASES: Readonly<Record<string, string[]>> = {
   kilo: ['kilo', 'kilo-cli'],
   codex: ['codex', 'codex-app', 'codex-cli', 'codex_desktop', 'codex-desktop'],
   copilot: ['copilot', 'copilot-cli', 'github-copilot'],
-  antigravity: ['antigravity', 'antigravity-cli', 'antigravity-agent'],
+  antigravity: ['antigravity', 'antigravity-agent'],
+  'antigravity-cli': ['antigravity-cli', 'agy'],
   cursor: ['cursor', 'cursor-cli', 'cursor-nightly'],
   windsurf: ['windsurf', 'windsurf-cli', 'windsurf-next', 'devin-desktop'],
   augment: ['augment', 'augment-code', 'augment-cli'],
@@ -486,6 +487,7 @@ const RUNTIME_LABELS: Readonly<Record<string, string>> = {
   codex: 'Codex',
   copilot: 'Copilot',
   antigravity: 'Antigravity',
+  'antigravity-cli': 'Antigravity CLI',
   cursor: 'Cursor',
   windsurf: 'Windsurf',
   augment: 'Augment',
@@ -589,7 +591,7 @@ export function getGlobalConfigHomeFragment(runtime: string): string {
 // cross-runtime agents-dispatch table (out of scope for #2094, which only
 // folds the shared-hooks-install skip).
 const RUNTIME_FLAG_IDS = Object.freeze([
-  'opencode', 'kilo', 'codex', 'copilot', 'antigravity', 'cursor',
+  'opencode', 'kilo', 'codex', 'copilot', 'antigravity', 'antigravity-cli', 'cursor',
   'windsurf', 'augment', 'trae', 'qwen', 'hermes', 'codebuddy', 'cline', 'kimi', 'kimi-code', 'zcode', 'pi', 'grok', 'vibe',
 ] as const);
 

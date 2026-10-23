@@ -260,6 +260,94 @@ const capabilities = {
       }
     }
   },
+  "antigravity-cli": {
+    "id": "antigravity-cli",
+    "role": "runtime",
+    "version": "1.18.0",
+    "title": "Antigravity CLI",
+    "description": "Google Antigravity CLI — GSD skills install in the CLI-specific ~/.gemini/antigravity-cli/skills root; separate from the Antigravity IDE config and discovery paths.",
+    "tier": "core",
+    "requires": [],
+    "engines": {
+      "gsd": ">=1.6.0"
+    },
+    "runtime": {
+      "configHome": {
+        "kind": "dot-home-nested",
+        "name": "antigravity-cli",
+        "parent": ".gemini",
+        "env": [
+          "ANTIGRAVITY_CLI_CONFIG_DIR"
+        ]
+      },
+      "localConfigDir": ".agents",
+      "configFormat": "none",
+      "artifactLayout": {
+        "global": [
+          {
+            "kind": "skills",
+            "destSubpath": "skills",
+            "prefix": "gsd-",
+            "nesting": "flat",
+            "recursive": false,
+            "converter": "convertClaudeCommandToAntigravityCliSkill"
+          }
+        ],
+        "local": [
+          {
+            "kind": "skills",
+            "destSubpath": "skills",
+            "prefix": "gsd-",
+            "nesting": "flat",
+            "recursive": false,
+            "converter": "convertClaudeCommandToAntigravityCliSkill"
+          }
+        ]
+      },
+      "triggerPrecedence": [
+        "skills",
+        "commands"
+      ],
+      "commandStyle": "slash-hyphen",
+      "hooksSurface": "none",
+      "extensionEvents": "none",
+      "sandboxTier": "none",
+      "supportTier": 2,
+      "installSurface": "profile-marker-only",
+      "writesSharedSettings": false,
+      "permissionWriter": null,
+      "extendedHookEvents": [],
+      "hostIntegration": {
+        "embeddingMode": "declarative",
+        "commandSurface": "slash-file",
+        "dispatch": {
+          "namedDispatch": "undocumented",
+          "nested": "undocumented",
+          "maxDepth": "undocumented",
+          "background": "undocumented",
+          "subagentToolkit": "full",
+          "backgroundDispatch": "undocumented",
+          "isolation": "undocumented",
+          "maxConcurrency": "undocumented"
+        },
+        "modelMode": "passive",
+        "hookBus": "host",
+        "stateIO": "filesystem",
+        "transport": "mcp",
+        "runtime": "go",
+        "effortSurface": "undocumented"
+      },
+      "hostBehaviors": {
+        "defaultHomeIncludeRoot": ".gemini/antigravity-cli",
+        "unsupportedFeatures": [
+          "context-warnings",
+          "phase-lifecycle-display"
+        ],
+        "projectInstructionFile": "GEMINI.md",
+        "contentRewriteProfile": "attribution-only"
+      }
+    }
+  },
   "assumption-delta": {
     "id": "assumption-delta",
     "role": "feature",
@@ -5910,6 +5998,94 @@ const runtimes = {
       }
     }
   },
+  "antigravity-cli": {
+    "id": "antigravity-cli",
+    "role": "runtime",
+    "version": "1.18.0",
+    "title": "Antigravity CLI",
+    "description": "Google Antigravity CLI — GSD skills install in the CLI-specific ~/.gemini/antigravity-cli/skills root; separate from the Antigravity IDE config and discovery paths.",
+    "tier": "core",
+    "requires": [],
+    "engines": {
+      "gsd": ">=1.6.0"
+    },
+    "runtime": {
+      "configHome": {
+        "kind": "dot-home-nested",
+        "name": "antigravity-cli",
+        "parent": ".gemini",
+        "env": [
+          "ANTIGRAVITY_CLI_CONFIG_DIR"
+        ]
+      },
+      "localConfigDir": ".agents",
+      "configFormat": "none",
+      "artifactLayout": {
+        "global": [
+          {
+            "kind": "skills",
+            "destSubpath": "skills",
+            "prefix": "gsd-",
+            "nesting": "flat",
+            "recursive": false,
+            "converter": "convertClaudeCommandToAntigravityCliSkill"
+          }
+        ],
+        "local": [
+          {
+            "kind": "skills",
+            "destSubpath": "skills",
+            "prefix": "gsd-",
+            "nesting": "flat",
+            "recursive": false,
+            "converter": "convertClaudeCommandToAntigravityCliSkill"
+          }
+        ]
+      },
+      "triggerPrecedence": [
+        "skills",
+        "commands"
+      ],
+      "commandStyle": "slash-hyphen",
+      "hooksSurface": "none",
+      "extensionEvents": "none",
+      "sandboxTier": "none",
+      "supportTier": 2,
+      "installSurface": "profile-marker-only",
+      "writesSharedSettings": false,
+      "permissionWriter": null,
+      "extendedHookEvents": [],
+      "hostIntegration": {
+        "embeddingMode": "declarative",
+        "commandSurface": "slash-file",
+        "dispatch": {
+          "namedDispatch": "undocumented",
+          "nested": "undocumented",
+          "maxDepth": "undocumented",
+          "background": "undocumented",
+          "subagentToolkit": "full",
+          "backgroundDispatch": "undocumented",
+          "isolation": "undocumented",
+          "maxConcurrency": "undocumented"
+        },
+        "modelMode": "passive",
+        "hookBus": "host",
+        "stateIO": "filesystem",
+        "transport": "mcp",
+        "runtime": "go",
+        "effortSurface": "undocumented"
+      },
+      "hostBehaviors": {
+        "defaultHomeIncludeRoot": ".gemini/antigravity-cli",
+        "unsupportedFeatures": [
+          "context-warnings",
+          "phase-lifecycle-display"
+        ],
+        "projectInstructionFile": "GEMINI.md",
+        "contentRewriteProfile": "attribution-only"
+      }
+    }
+  },
   "augment": {
     "id": "augment",
     "role": "runtime",
@@ -8585,6 +8761,7 @@ const profileMembership = {
 const _requiresGraph = {
   "ai-integration": [],
   "antigravity": [],
+  "antigravity-cli": [],
   "assumption-delta": [],
   "audit": [],
   "augment": [],
