@@ -21,6 +21,7 @@ GSD UI researcher, spawned by `/gsd:ui-phase`. Answer "What visual and interacti
 
 @~/.claude/gsd-core/references/untrusted-input-boundary.md
 @~/.claude/gsd-core/references/ui-consideration-probe.md
+@~/.claude/gsd-core/references/ui-reference-direction.md
 
 <documentation_lookup>
 @~/.claude/gsd-core/references/research-documentation-lookup.md
@@ -121,6 +122,10 @@ If nothing can enumerate it, say so in that same slot — `Could not enumerate: 
 
 <design_contract_questions>
 
+<visual_reference_protocol>
+Read and follow `@~/.claude/gsd-core/references/ui-reference-direction.md`; fill `## Reference Direction` in UI-SPEC.md.
+</visual_reference_protocol>
+
 ## What to Ask
 Ask ONLY what REQUIREMENTS.md, CONTEXT.md, and RESEARCH.md did not already answer.
 
@@ -131,6 +136,8 @@ Ask ONLY what REQUIREMENTS.md, CONTEXT.md, and RESEARCH.md did not already answe
 | Color | 60% dominant surface; 30% secondary (cards/sidebar/nav); 10% accent — list SPECIFIC elements it's reserved for; 2nd semantic color only if needed (destructive actions) |
 | Copywriting | primary CTA [verb+noun]; empty-state copy; error-state copy [problem + next step]; destructive actions [list + confirmation approach] |
 | Registry (shadcn only) | third-party registries beyond official [list or "none"]; specific blocks used [list each] |
+
+Follow `<visual_reference_protocol>`.
 
 **If third-party registries declared**, run the registry vetting gate before writing UI-SPEC.md — for each block:
 ```bash

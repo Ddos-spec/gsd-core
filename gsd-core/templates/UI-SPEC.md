@@ -27,6 +27,18 @@ created: "{date}"
 
 ---
 
+## Reference Direction
+
+Three distinct directions were compared; selected direction: {direction and product-specific reason}. Do not stop for routine preference confirmation in autonomous mode.
+
+| Reference URL | Specific visual signal | How it is adapted here | What not to copy |
+|---------------|-----------------------|------------------------|------------------|
+| {canonical URL, or project file/path} | {visible composition, type, color, motion, or interaction detail} | {adaptation tied to this product's audience and task} | {brand, copy, asset, or pattern that remains original} |
+
+If no external reference is appropriate, write `None — {reason}` and identify the existing project evidence used instead. References inform a direction; they are not templates to reproduce.
+
+---
+
 ## Design System
 
 | Property | Value |

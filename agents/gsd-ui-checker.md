@@ -119,6 +119,7 @@ fix_hint: "Replace with action-specific label like 'Send Message' or 'Create Acc
 **FLAG if:**
 - Audience, primary user job, or creative direction is missing
 - Creative direction is only a generic adjective (for example, "modern" or "clean") with no concrete composition or visual choice
+- `Reference Direction` is missing, or its evidence does not name a specific visual signal and a product-specific adaptation (unless a concrete reason for no external reference is recorded)
 - No focal point declared for primary screen
 - Icon-only actions declared without label fallback for accessibility
 - No visual hierarchy indicated (what draws the eye first?)
@@ -129,8 +130,8 @@ fix_hint: "Replace with action-specific label like 'Send Message' or 'Create Acc
 dimension: 2
 severity: FLAG
 required_property: "Each screen declares one primary visual anchor"
-description: "No product-specific visual concept or focal point is declared — executor will guess the design direction and visual priority"
-fix_hint: "Name the audience and primary job, then describe a concrete composition and its primary visual anchor"
+description: "No product-specific visual concept, focal point, or reference adaptation is declared — executor will guess the design direction and visual priority"
+fix_hint: "Name the audience and primary job, describe a concrete composition and its primary visual anchor, and record a specific reference signal with its product-specific adaptation"
 ```
 
 ## Dimension 3: Color

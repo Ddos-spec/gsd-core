@@ -355,6 +355,7 @@ Full roster at `gsd-core/references/*.md`. References are shared knowledge docum
 | `questioning.md` | Dream-extraction philosophy for project initialization. |
 | `tdd.md` | Test-driven development integration patterns. |
 | `ui-brand.md` | Visual output formatting patterns. |
+| `ui-reference-direction.md` | GSD Studio protocol for comparing visual directions and grounding the chosen UI-SPEC in inspectable references. |
 | `common-bug-patterns.md` | Common bug patterns for code review and verification. |
 | `debugger-philosophy.md` | Evergreen debugging disciplines loaded by `gsd-debugger`. |
 | `debugger-fix-acceptance.md` | Multi-signal fix-acceptance guardrail (anti-overfitting) loaded by `gsd-debugger`. |

@@ -94,8 +94,10 @@ solution path ("Something went wrong" alone).
 noun (e.g. "Create" not "Create Project").
 
 ## Dimension 2: Visuals — are focal points and visual hierarchy declared?
-**FLAG:** no focal point for the primary screen; icon-only actions without label fallback for
-accessibility; no visual hierarchy indicated.
+**FLAG:** `Reference Direction` is missing or fails to name a concrete visual signal and its
+product-specific adaptation (unless the contract explains why external references do not apply);
+no focal point for the primary screen; icon-only actions without label fallback for accessibility;
+no visual hierarchy indicated.
 
 ## Dimension 3: Color — is the contract specific enough to prevent accent overuse?
 **BLOCK:** accent reserved-for list empty or "all interactive elements"; more than one accent

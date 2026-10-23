@@ -8,9 +8,13 @@ const path = require('node:path');
 const ROOT = path.join(__dirname, '..');
 const workflow = fs.readFileSync(path.join(ROOT, 'gsd-core/workflows/ui-phase.md'), 'utf8');
 const researcher = fs.readFileSync(path.join(ROOT, 'agents/gsd-ui-researcher.md'), 'utf8');
+const compactResearcher = fs.readFileSync(path.join(ROOT, 'agents/gsd-ui-researcher.compact.md'), 'utf8');
+const referenceDirection = fs.readFileSync(path.join(ROOT, 'gsd-core/references/ui-reference-direction.md'), 'utf8');
 const specTemplate = fs.readFileSync(path.join(ROOT, 'gsd-core/templates/UI-SPEC.md'), 'utf8');
 const checker = fs.readFileSync(path.join(ROOT, 'agents/gsd-ui-checker.md'), 'utf8');
+const compactChecker = fs.readFileSync(path.join(ROOT, 'agents/gsd-ui-checker.compact.md'), 'utf8');
 const auditor = fs.readFileSync(path.join(ROOT, 'agents/gsd-ui-auditor.md'), 'utf8');
+const compactAuditor = fs.readFileSync(path.join(ROOT, 'agents/gsd-ui-auditor.compact.md'), 'utf8');
 
 describe('autonomous UI design contract', () => {
   test('ui-phase passes explicit auto mode to the researcher', () => {
@@ -35,6 +39,22 @@ describe('autonomous UI design contract', () => {
     assert.match(specTemplate, /Primary visual anchor/);
     assert.match(specTemplate, /Assumptions and Rationale/);
     assert.match(checker, /Dimension 2: Visuals[\s\S]*?Creative direction/);
-    assert.match(auditor, /Compare rendered screenshots with the UI-SPEC's audience, creative direction/);
+    assert.match(auditor, /Compare screenshots with the UI-SPEC's audience[\s\S]*reference adaptations/i);
+  });
+
+  test('GSD Studio grounds visual direction in references and says what is adapted', () => {
+    assert.match(researcher, /<visual_reference_protocol>/);
+    assert.match(researcher, /@~\/\.claude\/gsd-core\/references\/ui-reference-direction\.md/);
+    assert.match(referenceDirection, /three distinct visual directions/i);
+    assert.match(referenceDirection, /must not be copied/i);
+    assert.match(compactResearcher, /<visual_reference_protocol>/);
+    assert.match(compactResearcher, /@~\/\.claude\/gsd-core\/references\/ui-reference-direction\.md/);
+    assert.match(specTemplate, /## Reference Direction/);
+    assert.match(specTemplate, /Reference URL/);
+    assert.match(specTemplate, /How it is adapted here/);
+    assert.match(checker, /Reference Direction[\s\S]*?specific visual signal/i);
+    assert.match(compactChecker, /Reference Direction[\s\S]*?product-specific adaptation/i);
+    assert.match(auditor, /Compare screenshots with the UI-SPEC's audience[\s\S]*reference adaptations/i);
+    assert.match(compactAuditor, /Reference Direction[\s\S]*?without rewarding copied brands/i);
   });
 });

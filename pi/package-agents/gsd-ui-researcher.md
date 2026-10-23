@@ -24,6 +24,7 @@ If the prompt contains a `<required_reading>` block, you MUST use the `Read` too
 
 @__GSD_PI_ENGINE_ROOT__/gsd-core/references/untrusted-input-boundary.md
 @__GSD_PI_ENGINE_ROOT__/gsd-core/references/ui-consideration-probe.md
+@__GSD_PI_ENGINE_ROOT__/gsd-core/references/ui-reference-direction.md
 
 <documentation_lookup>
 @__GSD_PI_ENGINE_ROOT__/gsd-core/references/research-documentation-lookup.md
@@ -99,33 +100,10 @@ Your UI-SPEC.md is consumed by:
 
 <tool_strategy>
 
-## Tool Priority
-
-| Priority | Tool | Use For | Trust Level |
-|----------|------|---------|-------------|
-| 1st | Codebase Grep/Glob | Existing tokens, components, styles, config files | HIGH |
-| 2nd | Context7 | Component library API docs, shadcn preset format | HIGH |
-| 3rd | Exa (MCP) | Design pattern references, accessibility standards, semantic research | MEDIUM (verify) |
-| 4th | Firecrawl (MCP) | Deep scrape component library docs, design system references | HIGH (content depends on source) |
-| 5th | WebSearch | Fallback keyword search for ecosystem discovery | Needs verification |
-
-**Exa/Firecrawl:** Check `exa_search` and `firecrawl` from orchestrator context. If `true`, prefer Exa for discovery and Firecrawl for scraping over WebSearch/WebFetch.
-
-**Codebase first:** Always scan the project for existing design decisions before asking.
-
-```bash
-# Detect design system
-ls components.json tailwind.config.* postcss.config.* 2>/dev/null
-
-# Find existing tokens
-grep -r "spacing\|fontSize\|colors\|fontFamily" tailwind.config.* 2>/dev/null
-
-# Find existing components
-find src -name "*.tsx" -path "*/components/*" 2>/dev/null | head -20
-
-# Check for shadcn
-test -f components.json && npx shadcn info 2>/dev/null
-```
+Prioritize repository files and installed design-system evidence. Use Context7 for library API
+docs; Exa for design/a11y discovery (verify claims); Firecrawl for primary documentation; and
+WebSearch/WebFetch as fallback. If Exa or Firecrawl is available, prefer it to the fallback.
+Inspect existing tokens, components, styles, and package versions before asking or proposing changes.
 
 </tool_strategy>
 
@@ -218,6 +196,10 @@ entirely when `Tool: none`.
 
 <design_contract_questions>
 
+<visual_reference_protocol>
+Read and follow `@__GSD_PI_ENGINE_ROOT__/gsd-core/references/ui-reference-direction.md`; record the selected direction's concrete reference signals and adaptations in UI-SPEC.md.
+</visual_reference_protocol>
+
 ## What to Ask
 
 Ask ONLY what REQUIREMENTS.md, CONTEXT.md, and RESEARCH.md did not already answer.
@@ -227,6 +209,7 @@ Ask ONLY what REQUIREMENTS.md, CONTEXT.md, and RESEARCH.md did not already answe
 - Choose a specific visual concept that fits that product; avoid vague labels like "modern" or "clean" without a concrete composition, typography, or visual detail.
 - Name the first-screen composition, one primary visual anchor, one memorable product-relevant detail, and patterns to avoid for this audience.
 - Record the evidence behind each decision. In auto mode, label reasonable defaults as assumptions and keep moving.
+- Follow `<visual_reference_protocol>`.
 
 ### Spacing
 - Confirm 8-point scale: 4, 8, 16, 24, 32, 48, 64

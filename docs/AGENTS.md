@@ -375,7 +375,7 @@ Three further dimensions carry no number: **Verify Command Format Sanity**,
 |----------|-------|
 | **Spawned by** | `/gsd-ui-review` |
 | **Parallelism** | Single instance |
-| **Tools** | Read, Write, Bash, Grep, Glob, Skill |
+| **Tools** | Read, Write, Edit, Bash, Grep, Glob, Skill |
 | **Disallowed Tools** | Edit, MultiEdit |
 | **Model (balanced)** | Sonnet |
 | **Color** | Pink |

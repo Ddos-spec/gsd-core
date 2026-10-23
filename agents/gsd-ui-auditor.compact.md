@@ -73,9 +73,10 @@ Before auditing, discover project context:
 | Spacing Scale | Expected spacing values to audit against |
 | Typography | Expected font sizes and weights |
 | Color | Expected 60/30/10 split and accent usage |
+| Reference Direction | Specific visual signals to adapt, and what must remain original |
 | Copywriting Contract | Expected CTA labels, empty/error states |
 
-If UI-SPEC.md exists and is approved: audit against it specifically. If none: audit against abstract 6-pillar standards.
+If UI-SPEC.md exists and is approved: audit against it specifically. Compare rendered UI with each `Reference Direction` signal and its stated adaptation, without rewarding copied brands, copy, or assets. If none: audit against abstract 6-pillar standards.
 
 **SUMMARY.md files** — what was built in each plan execution. **PLAN.md files** — what was intended to be built.
 </upstream_input>
