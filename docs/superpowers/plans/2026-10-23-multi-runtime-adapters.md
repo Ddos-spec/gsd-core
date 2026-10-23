@@ -90,4 +90,4 @@
 - [x] Rewrite Grok/Vibe internal workflow references to their own installed `gsd-core` trees and verify that a combined Grok+Vibe CLI install emits no Claude-home dependency.
 - [x] Add curated Grok Build and Mistral Vibe labels so installer output identifies the selected runtime correctly.
 - [x] Add `~/.grok` to the canonical GSD tool resolver and regenerate its propagated workflow/agent copies.
-- [ ] Smoke-test skill discovery and invocation in the real Grok and Vibe hosts; Grok Build is installed but no no-cost headless skill-list command is documented, and the Vibe CLI is not currently found on this machine.
+- [x] Verify discovery and skill dispatch in the real Grok and Vibe hosts. Grok Build's `inspect --json` reports 8 GSD skills when `GROK_HOME` points to its global install. Mistral Vibe 3.0.2's installed `SkillManager` reports all 72 GSD skills under `~/.vibe/skills`; a bounded headless invocation selected and successfully read `gsd-help` (`skill.read`). Its one-turn limit stopped the model before a final text response, so multi-turn task completion remains unverified.
