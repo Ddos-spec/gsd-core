@@ -1,0 +1,77 @@
+{
+  "id": "grok",
+  "role": "runtime",
+  "version": "1.18.0",
+  "title": "Grok Build",
+  "description": "xAI Grok Build — GSD skills use Grok's native ~/.grok/skills root, avoiding collisions with other runtimes; native hooks and agent profiles are not projected by this adapter yet.",
+  "tier": "core",
+  "requires": [],
+  "engines": {
+    "gsd": ">=1.6.0"
+  },
+  "runtime": {
+    "configHome": {
+      "kind": "dot-home",
+      "name": ".grok",
+      "env": ["GROK_HOME"]
+    },
+    "localConfigDir": ".grok",
+    "configFormat": "none",
+    "artifactLayout": {
+      "global": [
+        {
+          "kind": "skills",
+          "destSubpath": "skills",
+          "prefix": "gsd-",
+          "nesting": "flat",
+          "recursive": false,
+          "converter": "convertClaudeCommandToGrokSkill"
+        }
+      ],
+      "local": [
+        {
+          "kind": "skills",
+          "destSubpath": "skills",
+          "prefix": "gsd-",
+          "nesting": "flat",
+          "recursive": false,
+          "converter": "convertClaudeCommandToGrokSkill"
+        }
+      ]
+    },
+    "triggerPrecedence": ["skills", "commands"],
+    "commandStyle": "slash-hyphen",
+    "hooksSurface": "none",
+    "extensionEvents": "none",
+    "sandboxTier": "none",
+    "supportTier": 2,
+    "installSurface": "profile-marker-only",
+    "writesSharedSettings": false,
+    "permissionWriter": null,
+    "extendedHookEvents": [],
+    "hostIntegration": {
+      "embeddingMode": "declarative",
+      "commandSurface": "slash-file",
+      "dispatch": {
+        "namedDispatch": "undocumented",
+        "nested": "undocumented",
+        "maxDepth": "undocumented",
+        "background": "undocumented",
+        "subagentToolkit": "full",
+        "backgroundDispatch": "undocumented",
+        "isolation": "undocumented",
+        "maxConcurrency": "undocumented"
+      },
+      "modelMode": "passive",
+      "hookBus": "host",
+      "stateIO": "filesystem",
+      "transport": "mcp",
+      "runtime": "other",
+      "effortSurface": "undocumented"
+    },
+    "hostBehaviors": {
+      "unsupportedFeatures": ["context-warnings", "phase-lifecycle-display"],
+      "contentRewriteProfile": "slash-tilde-restore"
+    }
+  }
+}

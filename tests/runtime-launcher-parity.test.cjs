@@ -1647,7 +1647,7 @@ const EXPECTED_RUNTIME_PROBES = {
   qwen:        '$HOME/.qwen}"',
   codebuddy:   '$HOME/.codebuddy}"',
   cline:       '$HOME/.cline}"',
-  grok:        'GROK_AGENTS_HOME:-$HOME/.agents}"',
+  grok:        'GROK_HOME:-$HOME/.grok}"',
   antigravity: '$HOME/.gemini/antigravity}"',
   opencode:    '/opencode}"',
   kilo:        '/kilo}"',

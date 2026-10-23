@@ -4,9 +4,8 @@
  * Runtime artifact layout module — resolves the artifact directory shapes
  * (commands, agents, skills) for each supported runtime.
  *
- * grok is intentionally absent: it is in runtime-homes.cjs but has no runtime
- * capability descriptor. The TypeError on unknown runtime is the loud-fail
- * signal that a runtime was added without an artifact layout descriptor.
+ * The TypeError on unknown runtime is the loud-fail signal that a runtime was
+ * added without an artifact layout descriptor.
  *
  * ADR-457 build-at-publish: the hand-written bin/lib/runtime-artifact-layout.cjs
  * collapsed to a TypeScript source of truth. Behaviour is preserved byte-for-behaviour
@@ -920,6 +919,8 @@ interface ArtifactKindDescriptor {
    *  (e.g. ".agents" for codex skills → $HOME/.agents/skills). When absent,
    *  the kind installs under the runtime's normal configDir. */
   home?: string;
+  /** Optional environment-variable override for `home` (e.g. Grok shared skills root). */
+  homeEnv?: string;
   /** Agent filename suffixes the agents staging skips (e.g. ".compact.md"). */
   excludeSuffixes?: string[];
 }
@@ -986,7 +987,17 @@ function dispatchKindEntry(entry: ArtifactKindDescriptor, runtime: string, confi
   // anything else (see the `scope !== 'local' && scope !== 'global'` guard above its
   // dispatchKindEntry call), so isGlobalScope's throw-on-invalid-input never fires here.
   if (isGlobalScope(scope) && typeof entry.home === 'string' && entry.home !== '') {
-    result.home = path.join(os.homedir(), entry.home);
+    const override = entry.homeEnv ? process.env[entry.homeEnv] : undefined;
+    if (override && override.trim()) {
+      const value = override.trim();
+      result.home = value === '~'
+        ? os.homedir()
+        : value.startsWith('~/') || value.startsWith('~\\')
+          ? path.join(os.homedir(), value.slice(2))
+          : path.resolve(value);
+    } else {
+      result.home = path.join(os.homedir(), entry.home);
+    }
   }
 
   return result;

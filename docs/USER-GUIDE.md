@@ -965,6 +965,8 @@ WINDSURF_CONFIG_DIR=~/.codeium/windsurf-next npx @opengsd/gsd-core@latest --wind
 | Kilo | `~/.config/kilo` | `KILO_CONFIG_DIR` |
 | CodeBuddy | `~/.codebuddy` | `CODEBUDDY_CONFIG_DIR` |
 | Cline | `~/.cline` | `CLINE_CONFIG_DIR` |
+| Grok Build | `~/.grok` | `GROK_HOME` (skills: `~/.grok/skills`) |
+| Mistral Vibe | `~/.vibe` | `VIBE_HOME` |
 
 ### Using Claude Code with Non-Anthropic Providers
 

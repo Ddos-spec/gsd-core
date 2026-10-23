@@ -177,12 +177,11 @@ describe('#2665: TEST_ENV_BASE config-location coverage', () => {
 
   test('the non-registry config-location vars are covered too', () => {
     // These have no capability descriptor, so the registry derivation alone
-    // cannot reach them: GROK_AGENTS_HOME is a hardcoded branch of
-    // getGlobalConfigDir, GSD_RUNTIME selects which runtime home resolves, and
+    // cannot reach them: GSD_RUNTIME selects which runtime home resolves, and
     // GSD_PROJECT / GSD_WORKSTREAM move a child's .planning root
     // (src/planning-workspace.cts). Named explicitly so deleting one from the
     // helper is a test failure rather than a silent narrowing.
-    for (const key of ['GROK_AGENTS_HOME', 'GSD_RUNTIME', 'GSD_PROJECT', 'GSD_WORKSTREAM']) {
+    for (const key of ['GSD_RUNTIME', 'GSD_PROJECT', 'GSD_WORKSTREAM']) {
       assert.strictEqual(TEST_ENV_BASE[key], '', `${key} must be scrubbed`);
     }
   });

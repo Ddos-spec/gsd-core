@@ -77,7 +77,6 @@ function restoreEnv(saved) {
 describe('#3024 review finding 2: LEGACY_NON_REGISTRY_RUNTIME_IDS drift guard (#5169: table-derived)', () => {
   test('the legacy id set is exactly the key set of the legacy home table, and is disjoint from the registry', () => {
     const tableIds = Object.keys(LEGACY_NON_REGISTRY_RUNTIME_HOMES).sort();
-    assert.ok(tableIds.length > 0, 'EMPTY CAPTURE: the legacy home table is empty');
     assert.deepStrictEqual([...LEGACY_NON_REGISTRY_RUNTIME_IDS].sort(), tableIds);
     for (const id of tableIds) {
       assert.ok(!Object.prototype.hasOwnProperty.call(runtimes, id), `${id} is registered AND legacy-listed`);
@@ -103,10 +102,13 @@ describe('#3024 review finding 2: LEGACY_NON_REGISTRY_RUNTIME_IDS drift guard (#
     }
   });
 
-  test('grok is a legacy runtime and still resolves (#3024: the hardcoded branch was the reason this guard exists)', () => {
-    assert.ok(LEGACY_NON_REGISTRY_RUNTIME_IDS.has('grok'));
+  test('grok and vibe are registry runtimes and resolve through their descriptors', () => {
+    assert.ok(!LEGACY_NON_REGISTRY_RUNTIME_IDS.has('grok'));
+    assert.ok(!LEGACY_NON_REGISTRY_RUNTIME_IDS.has('vibe'));
     assert.ok(isRegisteredRuntimeId('grok'));
+    assert.ok(isRegisteredRuntimeId('vibe'));
     assert.doesNotThrow(() => getGlobalConfigDir('grok'));
+    assert.doesNotThrow(() => getGlobalConfigDir('vibe'));
   });
 
   test('every registered id and every legacy id is KNOWN; an unregistered id is not', () => {

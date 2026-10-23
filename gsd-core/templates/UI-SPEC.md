@@ -13,6 +13,20 @@ created: "{date}"
 
 ---
 
+## Product and Visual Direction
+
+| Field | Contract |
+|-------|----------|
+| Audience and use context | {who uses this and where / when} |
+| Primary user job | {the main task this interface helps complete} |
+| Creative direction | {one specific visual concept tied to the product and audience} |
+| Composition | {how the first screen guides attention and supports the primary job} |
+| Primary visual anchor | {the first element or content that should draw attention} |
+| Distinctive detail | {one memorable, product-relevant detail} |
+| Avoid | {generic patterns or visual choices that would weaken this product} |
+
+---
+
 ## Design System
 
 | Property | Value |
@@ -85,6 +99,16 @@ Exceptions: {list any, or "none"}
 | Destructive | {hex} | Destructive actions only |
 
 Accent reserved for: {explicit list — never "all interactive elements"}
+
+---
+
+## Assumptions and Rationale
+
+| Decision | Evidence or assumption | Rationale |
+|----------|-----------------------|-----------|
+| {design choice} | {requirement, existing UI, brand asset, or explicit assumption} | {why this best serves the audience and task} |
+
+If no assumptions were needed, write `None — all decisions are grounded in the listed project evidence.`
 
 ---
 

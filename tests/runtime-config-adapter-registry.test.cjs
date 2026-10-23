@@ -82,8 +82,8 @@ describe('resolveRuntimeConfigIntent — projection contract', () => {
 // ---------------------------------------------------------------------------
 
 describe('resolveRuntimeConfigIntent — unknown runtime throws TypeError', () => {
-  test('throws TypeError for unknown string "grok"', () => {
-    assert.throws(() => resolveRuntimeConfigIntent('grok'), TypeError);
+  test('throws TypeError for an unknown runtime id', () => {
+    assert.throws(() => resolveRuntimeConfigIntent('not-a-runtime'), TypeError);
   });
 
   test('throws TypeError for unknown string "xyzunknown"', () => {

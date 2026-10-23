@@ -46,6 +46,11 @@ test('getRuntimeLabel: every registry runtime resolves to a non-empty curated la
   }
 });
 
+test('getRuntimeLabel: Grok and Vibe have product-specific install labels', () => {
+  assert.equal(getRuntimeLabel('grok'), 'Grok Build');
+  assert.equal(getRuntimeLabel('vibe'), 'Mistral Vibe');
+});
+
 test('getRuntimeLabel drift guard: no registry runtime except claude falls through to the default (forces a deliberate label per runtime)', () => {
   // claude's curated label IS the fallback string, so it is exempt. Every other
   // registry runtime must resolve to a DISTINCT label — otherwise it was added

@@ -1848,6 +1848,91 @@ const capabilities = {
     "contributions": [],
     "gates": []
   },
+  "grok": {
+    "id": "grok",
+    "role": "runtime",
+    "version": "1.18.0",
+    "title": "Grok Build",
+    "description": "xAI Grok Build — GSD skills use Grok's native ~/.grok/skills root, avoiding collisions with other runtimes; native hooks and agent profiles are not projected by this adapter yet.",
+    "tier": "core",
+    "requires": [],
+    "engines": {
+      "gsd": ">=1.6.0"
+    },
+    "runtime": {
+      "configHome": {
+        "kind": "dot-home",
+        "name": ".grok",
+        "env": [
+          "GROK_HOME"
+        ]
+      },
+      "localConfigDir": ".grok",
+      "configFormat": "none",
+      "artifactLayout": {
+        "global": [
+          {
+            "kind": "skills",
+            "destSubpath": "skills",
+            "prefix": "gsd-",
+            "nesting": "flat",
+            "recursive": false,
+            "converter": "convertClaudeCommandToGrokSkill"
+          }
+        ],
+        "local": [
+          {
+            "kind": "skills",
+            "destSubpath": "skills",
+            "prefix": "gsd-",
+            "nesting": "flat",
+            "recursive": false,
+            "converter": "convertClaudeCommandToGrokSkill"
+          }
+        ]
+      },
+      "triggerPrecedence": [
+        "skills",
+        "commands"
+      ],
+      "commandStyle": "slash-hyphen",
+      "hooksSurface": "none",
+      "extensionEvents": "none",
+      "sandboxTier": "none",
+      "supportTier": 2,
+      "installSurface": "profile-marker-only",
+      "writesSharedSettings": false,
+      "permissionWriter": null,
+      "extendedHookEvents": [],
+      "hostIntegration": {
+        "embeddingMode": "declarative",
+        "commandSurface": "slash-file",
+        "dispatch": {
+          "namedDispatch": "undocumented",
+          "nested": "undocumented",
+          "maxDepth": "undocumented",
+          "background": "undocumented",
+          "subagentToolkit": "full",
+          "backgroundDispatch": "undocumented",
+          "isolation": "undocumented",
+          "maxConcurrency": "undocumented"
+        },
+        "modelMode": "passive",
+        "hookBus": "host",
+        "stateIO": "filesystem",
+        "transport": "mcp",
+        "runtime": "other",
+        "effortSurface": "undocumented"
+      },
+      "hostBehaviors": {
+        "unsupportedFeatures": [
+          "context-warnings",
+          "phase-lifecycle-display"
+        ],
+        "contentRewriteProfile": "slash-tilde-restore"
+      }
+    }
+  },
   "hermes": {
     "id": "hermes",
     "role": "runtime",
@@ -4024,6 +4109,91 @@ const capabilities = {
         "onError": "halt"
       }
     ]
+  },
+  "vibe": {
+    "id": "vibe",
+    "role": "runtime",
+    "version": "1.18.0",
+    "title": "Mistral Vibe",
+    "description": "Mistral Vibe Code CLI — GSD commands are installed as invocable Agent Skills under ~/.vibe/skills; native agent profiles and hooks require a separate projection.",
+    "tier": "core",
+    "requires": [],
+    "engines": {
+      "gsd": ">=1.6.0"
+    },
+    "runtime": {
+      "configHome": {
+        "kind": "dot-home",
+        "name": ".vibe",
+        "env": [
+          "VIBE_HOME"
+        ]
+      },
+      "localConfigDir": ".vibe",
+      "configFormat": "none",
+      "artifactLayout": {
+        "global": [
+          {
+            "kind": "skills",
+            "destSubpath": "skills",
+            "prefix": "gsd-",
+            "nesting": "flat",
+            "recursive": false,
+            "converter": "convertClaudeCommandToVibeSkill"
+          }
+        ],
+        "local": [
+          {
+            "kind": "skills",
+            "destSubpath": "skills",
+            "prefix": "gsd-",
+            "nesting": "flat",
+            "recursive": false,
+            "converter": "convertClaudeCommandToVibeSkill"
+          }
+        ]
+      },
+      "triggerPrecedence": [
+        "skills",
+        "commands"
+      ],
+      "commandStyle": "slash-hyphen",
+      "hooksSurface": "none",
+      "extensionEvents": "none",
+      "sandboxTier": "none",
+      "supportTier": 2,
+      "installSurface": "profile-marker-only",
+      "writesSharedSettings": false,
+      "permissionWriter": null,
+      "extendedHookEvents": [],
+      "hostIntegration": {
+        "embeddingMode": "declarative",
+        "commandSurface": "slash-file",
+        "dispatch": {
+          "namedDispatch": "undocumented",
+          "nested": "undocumented",
+          "maxDepth": "undocumented",
+          "background": "undocumented",
+          "subagentToolkit": "full",
+          "backgroundDispatch": "undocumented",
+          "isolation": "undocumented",
+          "maxConcurrency": "undocumented"
+        },
+        "modelMode": "passive",
+        "hookBus": "host",
+        "stateIO": "filesystem",
+        "transport": "mcp",
+        "runtime": "python",
+        "effortSurface": "undocumented"
+      },
+      "hostBehaviors": {
+        "unsupportedFeatures": [
+          "context-warnings",
+          "phase-lifecycle-display"
+        ],
+        "contentRewriteProfile": "slash-tilde-restore"
+      }
+    }
   },
   "vscode": {
     "id": "vscode",
@@ -6721,6 +6891,91 @@ const runtimes = {
       }
     }
   },
+  "grok": {
+    "id": "grok",
+    "role": "runtime",
+    "version": "1.18.0",
+    "title": "Grok Build",
+    "description": "xAI Grok Build — GSD skills use Grok's native ~/.grok/skills root, avoiding collisions with other runtimes; native hooks and agent profiles are not projected by this adapter yet.",
+    "tier": "core",
+    "requires": [],
+    "engines": {
+      "gsd": ">=1.6.0"
+    },
+    "runtime": {
+      "configHome": {
+        "kind": "dot-home",
+        "name": ".grok",
+        "env": [
+          "GROK_HOME"
+        ]
+      },
+      "localConfigDir": ".grok",
+      "configFormat": "none",
+      "artifactLayout": {
+        "global": [
+          {
+            "kind": "skills",
+            "destSubpath": "skills",
+            "prefix": "gsd-",
+            "nesting": "flat",
+            "recursive": false,
+            "converter": "convertClaudeCommandToGrokSkill"
+          }
+        ],
+        "local": [
+          {
+            "kind": "skills",
+            "destSubpath": "skills",
+            "prefix": "gsd-",
+            "nesting": "flat",
+            "recursive": false,
+            "converter": "convertClaudeCommandToGrokSkill"
+          }
+        ]
+      },
+      "triggerPrecedence": [
+        "skills",
+        "commands"
+      ],
+      "commandStyle": "slash-hyphen",
+      "hooksSurface": "none",
+      "extensionEvents": "none",
+      "sandboxTier": "none",
+      "supportTier": 2,
+      "installSurface": "profile-marker-only",
+      "writesSharedSettings": false,
+      "permissionWriter": null,
+      "extendedHookEvents": [],
+      "hostIntegration": {
+        "embeddingMode": "declarative",
+        "commandSurface": "slash-file",
+        "dispatch": {
+          "namedDispatch": "undocumented",
+          "nested": "undocumented",
+          "maxDepth": "undocumented",
+          "background": "undocumented",
+          "subagentToolkit": "full",
+          "backgroundDispatch": "undocumented",
+          "isolation": "undocumented",
+          "maxConcurrency": "undocumented"
+        },
+        "modelMode": "passive",
+        "hookBus": "host",
+        "stateIO": "filesystem",
+        "transport": "mcp",
+        "runtime": "other",
+        "effortSurface": "undocumented"
+      },
+      "hostBehaviors": {
+        "unsupportedFeatures": [
+          "context-warnings",
+          "phase-lifecycle-display"
+        ],
+        "contentRewriteProfile": "slash-tilde-restore"
+      }
+    }
+  },
   "hermes": {
     "id": "hermes",
     "role": "runtime",
@@ -7823,6 +8078,91 @@ const runtimes = {
       }
     }
   },
+  "vibe": {
+    "id": "vibe",
+    "role": "runtime",
+    "version": "1.18.0",
+    "title": "Mistral Vibe",
+    "description": "Mistral Vibe Code CLI — GSD commands are installed as invocable Agent Skills under ~/.vibe/skills; native agent profiles and hooks require a separate projection.",
+    "tier": "core",
+    "requires": [],
+    "engines": {
+      "gsd": ">=1.6.0"
+    },
+    "runtime": {
+      "configHome": {
+        "kind": "dot-home",
+        "name": ".vibe",
+        "env": [
+          "VIBE_HOME"
+        ]
+      },
+      "localConfigDir": ".vibe",
+      "configFormat": "none",
+      "artifactLayout": {
+        "global": [
+          {
+            "kind": "skills",
+            "destSubpath": "skills",
+            "prefix": "gsd-",
+            "nesting": "flat",
+            "recursive": false,
+            "converter": "convertClaudeCommandToVibeSkill"
+          }
+        ],
+        "local": [
+          {
+            "kind": "skills",
+            "destSubpath": "skills",
+            "prefix": "gsd-",
+            "nesting": "flat",
+            "recursive": false,
+            "converter": "convertClaudeCommandToVibeSkill"
+          }
+        ]
+      },
+      "triggerPrecedence": [
+        "skills",
+        "commands"
+      ],
+      "commandStyle": "slash-hyphen",
+      "hooksSurface": "none",
+      "extensionEvents": "none",
+      "sandboxTier": "none",
+      "supportTier": 2,
+      "installSurface": "profile-marker-only",
+      "writesSharedSettings": false,
+      "permissionWriter": null,
+      "extendedHookEvents": [],
+      "hostIntegration": {
+        "embeddingMode": "declarative",
+        "commandSurface": "slash-file",
+        "dispatch": {
+          "namedDispatch": "undocumented",
+          "nested": "undocumented",
+          "maxDepth": "undocumented",
+          "background": "undocumented",
+          "subagentToolkit": "full",
+          "backgroundDispatch": "undocumented",
+          "isolation": "undocumented",
+          "maxConcurrency": "undocumented"
+        },
+        "modelMode": "passive",
+        "hookBus": "host",
+        "stateIO": "filesystem",
+        "transport": "mcp",
+        "runtime": "python",
+        "effortSurface": "undocumented"
+      },
+      "hostBehaviors": {
+        "unsupportedFeatures": [
+          "context-warnings",
+          "phase-lifecycle-display"
+        ],
+        "contentRewriteProfile": "slash-tilde-restore"
+      }
+    }
+  },
   "vscode": {
     "id": "vscode",
     "role": "runtime",
@@ -8262,6 +8602,7 @@ const _requiresGraph = {
   "external-job": [],
   "gap-analysis": [],
   "graphify": [],
+  "grok": [],
   "hermes": [],
   "intel": [],
   "kilo": [],
@@ -8287,6 +8628,7 @@ const _requiresGraph = {
   "tdd": [],
   "trae": [],
   "ui": [],
+  "vibe": [],
   "vscode": [],
   "windsurf": [],
   "zcode": []

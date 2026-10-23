@@ -117,11 +117,11 @@ describe('hostBehaviorsFor — the single host-behaviors accessor', () => {
     );
   });
 
-  test('known non-registry ids (grok) resolve to the generic behaviors rather than refusing', () => {
-    assert.ok(LEGACY_NON_REGISTRY_RUNTIME_IDS.has('grok'));
-    for (const id of LEGACY_NON_REGISTRY_RUNTIME_IDS) {
-      assert.deepEqual(hostBehaviorsFor(id), {});
+  test('Grok and Vibe resolve their registered descriptor behaviors', () => {
+    assert.equal(LEGACY_NON_REGISTRY_RUNTIME_IDS.size, 0);
+    for (const id of ['grok', 'vibe']) {
       assert.ok(isKnownRuntimeId(id));
+      assert.strictEqual(hostBehaviorsFor(id), registry.runtimes[id].runtime.hostBehaviors);
     }
   });
 
@@ -220,8 +220,11 @@ describe('every descriptor accessor refuses an unknown id', () => {
     assert.throws(() => getGlobalConfigDir('nope-runtime', '/some/dir'), UNKNOWN);
   });
 
-  test('grok still resolves (known, not registered)', () => {
-    assert.doesNotThrow(() => getGlobalConfigDir('grok'));
+  test('Grok and Vibe resolve through registered config-home descriptors', () => {
+    for (const id of ['grok', 'vibe']) {
+      assert.ok(isKnownRuntimeId(id));
+      assert.doesNotThrow(() => getGlobalConfigDir(id));
+    }
   });
 
   test('the two documented cross-agent-default accessors keep their default for an unknown id (ADR-5057 §5 Phase 10 amendment)', () => {

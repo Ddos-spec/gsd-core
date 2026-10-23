@@ -838,7 +838,7 @@ function validateTaskContentResolverFields(cap) {
   return errors;
 }
 
-// ADR-857 phase 5e: Closed ConverterName enum — complete set used across 16 runtime descriptors,
+// ADR-857 phase 5e: Closed ConverterName enum — complete set used across runtime descriptors,
 // all exported by bin/install.js (commands/skills) and src/runtime-artifact-conversion.cts (agents).
 // Any ArtifactKind with a non-null converter must use one of these.
 const VALID_CONVERTER_NAMES = new Set([
@@ -852,12 +852,14 @@ const VALID_CONVERTER_NAMES = new Set([
   'convertClaudeCommandToCodexSkill',
   'convertClaudeCommandToCopilotSkill',
   'convertClaudeCommandToCursorSkill',
+  'convertClaudeCommandToGrokSkill',
   'convertClaudeCommandToKiloSkill',
   'convertClaudeCommandToKimiSkill',
   'convertClaudeCommandToKimiCodeSkill',
   'convertClaudeCommandToOpencodeSkill',
   'convertClaudeCommandToPiSkill',
   'convertClaudeCommandToTraeSkill',
+  'convertClaudeCommandToVibeSkill',
   'convertClaudeCommandToWindsurfSkill',
   'convertClaudeCommandToWindsurfWorkflow',
   // agent converters (#1173 — descriptor-driven agent conversion wiring)
@@ -1253,6 +1255,11 @@ function validateArtifactKindEntry(capId, entry, prefix) {
     }
   }
 
+  // homeEnv — optional environment variable controlling an alternate artifact home.
+  if (entry.homeEnv !== undefined && (typeof entry.homeEnv !== 'string' || !/^[A-Z_][A-Z0-9_]*$/.test(entry.homeEnv))) {
+    errors.push(ctx + '.homeEnv must be an environment-variable name if present');
+  }
+
   // converter — required; must be a string or null (closed ConverterName enum — now enforced in phase 5e)
   if (!Object.prototype.hasOwnProperty.call(entry, 'converter')) {
     errors.push(ctx + '.converter is required (must be a string or null)');
@@ -1630,7 +1637,7 @@ function validateRuntimeBody(cap) {
         );
       }
 
-      // backgroundDispatch — REQUIRED (all 16 runtime descriptors carry it, matching the sibling fields
+      // backgroundDispatch — REQUIRED (all registered runtime descriptors carry it, matching the sibling fields
       // namedDispatch/nested/background/subagentToolkit/maxDepth which are all required).
       if (!Object.prototype.hasOwnProperty.call(d, 'backgroundDispatch')) {
         errors.push(
@@ -3914,7 +3921,7 @@ function runConfigFormatParityGate(capMap) {
     if (!r || typeof r.configFormat !== 'string') continue; // already validated above
 
     // Only check runtimes that have an installSurface (i.e. are config-adapter runtimes)
-    if (typeof r.installSurface !== 'string') continue; // grok etc. excluded — no installSurface
+    if (typeof r.installSurface !== 'string') continue; // runtimes without config adapters have no installSurface
 
     const installSurface = r.installSurface;
     const expectedConfigFormat = INSTALL_SURFACE_TO_CONFIG_FORMAT.get(installSurface);

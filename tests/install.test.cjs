@@ -113,8 +113,7 @@ describe('getDirName — all runtimes', () => {
 
 describe('getGlobalConfigDir — all runtimes default paths', () => {
   // Derive env-var list from the registry so it stays auto-correct when new
-  // runtimes are added. GROK_AGENTS_HOME is kept explicitly because grok has
-  // no registry entry.
+  // runtimes are added.
   const { runtimes: _registryRuntimes } = require('../gsd-core/bin/lib/capability-registry.cjs');
   const _registryEnvKeys = Object.values(_registryRuntimes).flatMap((r) => {
     const ch = r.runtime?.configHome;
@@ -123,7 +122,7 @@ describe('getGlobalConfigDir — all runtimes default paths', () => {
     const skillsEnvs = ch.skillsHome && Array.isArray(ch.skillsHome.env) ? ch.skillsHome.env : [];
     return [...envs, ...skillsEnvs];
   });
-  const ENV_KEYS = [...new Set([..._registryEnvKeys, 'GROK_AGENTS_HOME', 'XDG_CONFIG_HOME'])];
+  const ENV_KEYS = [...new Set([..._registryEnvKeys, 'XDG_CONFIG_HOME'])];
   let savedEnv = {};
 
   beforeEach(() => {
@@ -6932,32 +6931,26 @@ describe('#3024: gsd-tools query skills-root', () => {
     );
   });
 
-  // #3024 review BLOCKER (finding 1 regression pin): the first fix pass
-  // rejected `grok` outright, and a test that only asserts "grok is
-  // accepted" would not have caught that regression's root cause — an
-  // allow-list membership check proves nothing about whether the id
-  // actually resolves anywhere real. This asserts the REAL contract: grok
-  // must both be accepted AND resolve to its own dedicated `~/.agents`
-  // layout (see `LEGACY_NON_REGISTRY_RUNTIME_IDS` in
-  // `src/runtime-homes.cts`), not to claude's wrong-runtime fallback.
-  test('grok: accepted, and resolves under .agents — NOT claude\'s skills root (inclusion is real, not merely allow-listed)', () => {
+  // Grok must resolve to its documented native skills root, kept separate
+  // from Codex's ~/.agents/skills projection so `--all` preserves both formats.
+  test('grok: accepted, resolves under .grok, and stays separate from other runtime roots', () => {
     const claudeSkillsRoot = path.join(os.homedir(), '.claude', 'skills');
-    const grokSkillsRoot = path.join(os.homedir(), '.agents', 'skills');
+    const codexSkillsRoot = path.join(os.homedir(), '.agents', 'skills');
+    const grokSkillsRoot = path.join(os.homedir(), '.grok', 'skills');
     const result = runNode([TOOLS_PATH, 'query', 'skills-root', 'grok', '--raw'], {
-      env: { ...process.env, GSD_TEST_MODE: '1', GROK_AGENTS_HOME: undefined },
+      env: { ...process.env, GSD_TEST_MODE: '1', GROK_HOME: undefined },
     });
     assert.equal(result.outcome, OUTCOME.EXITED, `gsd-tools did not exit cleanly: ${JSON.stringify(result)}`);
     assert.strictEqual(result.exitCode, 0, `grok must be accepted; gsd-tools exited ${result.exitCode}: ${result.stderr}`);
     const actual = result.stdout.trim();
-    assert.strictEqual(actual, grokSkillsRoot, `Expected grok to resolve under .agents (${grokSkillsRoot}), got ${actual}`);
+    assert.strictEqual(actual, grokSkillsRoot, `Expected grok to resolve under .grok (${grokSkillsRoot}), got ${actual}`);
     assert.notStrictEqual(actual, claudeSkillsRoot, "grok must NOT resolve to claude's skills root");
+    assert.notStrictEqual(actual, codexSkillsRoot, "grok must NOT resolve to Codex's shared skills root");
   });
 
   // #3024 review BLOCKER (finding 1, rejection-side teeth): `gemini` must
-  // stay rejected, and — critically — for the RIGHT reason. It is not
-  // merely "unregistered" (grok is unregistered too, and is correctly
-  // accepted via LEGACY_NON_REGISTRY_RUNTIME_IDS); gemini has no dedicated
-  // resolution branch anywhere, so `getGlobalSkillsBase('gemini')` silently
+  // stay rejected, and — critically — for the RIGHT reason. Gemini has no
+  // dedicated resolution branch anywhere, so `getGlobalSkillsBase('gemini')` silently
   // falls through to claude's wrong-runtime fallback path. The CLI-level
   // assertion proves gemini is rejected; the direct-resolution assertion
   // below proves WHY it must stay rejected — if gemini ever grew a real
@@ -7035,21 +7028,8 @@ describe('sync-skills.md — required behavioral specs', () => {
     );
   });
 
-  // #3024 review BLOCKER (finding 1 — REGRESSION): this branch's first fix
-  // pass hand-derived the "expected" set from the registry alone and dropped
-  // `grok` from both the doc list and the `--to all` expansion, on the
-  // mistaken assumption that "not in the registry" means "not a real
-  // runtime". `grok` has a live, dedicated `~/.agents`-layout resolution
-  // branch in `getGlobalConfigDir` (see `LEGACY_NON_REGISTRY_RUNTIME_IDS` in
-  // `src/runtime-homes.cts`) predating the capability registry, so removing
-  // it silently broke working, documented `--skills-root`/`sync-skills`
-  // support. `gemini`, by contrast, is correctly excluded: it has NO
-  // dedicated branch and falls through to claude's skills root — the
-  // wrong-runtime bug this whole PR exists to fix. This parity test fails
-  // the moment either doc list next diverges from (registry ∪
-  // NAMED_LEGACY_INCLUSIONS) minus NAMED_DELIBERATE_EXCLUSIONS, in EITHER
-  // direction (an id in the doc but not expected, or an id expected but
-  // missing from the doc).
+  // The documented runtime list must match the capability registry, with
+  // only runtimes that have no skills surface deliberately excluded.
   test('parity: documented runtime list matches the capability registry (minus deliberate exclusions)', () => {
     content = content || readWorkflow();
     const { runtimes } = require('../gsd-core/bin/lib/capability-registry.cjs');
@@ -7057,17 +7037,9 @@ describe('sync-skills.md — required behavioral specs', () => {
     const registryIds = Object.keys(runtimes);
     assert.ok(registryIds.length > 0, 'capability registry must list at least one runtime');
 
-    // Named, single-source inclusion: runtime ids with a genuine dedicated
-    // resolution branch (see `LEGACY_NON_REGISTRY_RUNTIME_IDS` in
-    // `src/runtime-homes.cts`) but no capability-registry descriptor. As of
-    // #3024 this is `grok` only — imported directly from the same constant
-    // `isRegisteredRuntimeId` gates on, so this test and the validator can
-    // never independently drift on which legacy ids are "real".
+    // Legacy inclusion remains available for any explicitly supported
+    // non-registry host, but Grok/Vibe now have first-class descriptors.
     const NAMED_LEGACY_INCLUSIONS = [...LEGACY_NON_REGISTRY_RUNTIME_IDS];
-    assert.ok(
-      NAMED_LEGACY_INCLUSIONS.length > 0 && NAMED_LEGACY_INCLUSIONS.includes('grok'),
-      `expected LEGACY_NON_REGISTRY_RUNTIME_IDS to include 'grok'; got ${JSON.stringify(NAMED_LEGACY_INCLUSIONS)}`
-    );
     for (const included of NAMED_LEGACY_INCLUSIONS) {
       assert.ok(
         !registryIds.includes(included),

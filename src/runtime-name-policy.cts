@@ -142,17 +142,10 @@ export function assertNotRetiredRuntime(runtime: unknown): void {
 }
 
 /**
- * Legacy runtime ids that have a genuine, dedicated resolution branch in
- * `runtime-homes.cts` but no capability-registry descriptor (#3024). They are
- * KNOWN ids: every accessor resolves them rather than refusing. Enumerated by
- * hand and MUST stay in lockstep with `getGlobalConfigDir`'s hardcoded
- * branches — add an id only after confirming it has a real dedicated branch.
+ * Legacy runtime ids that still use the compatibility resolution path.
  */
 export const LEGACY_NON_REGISTRY_RUNTIME_HOMES: Readonly<Record<string, { env: string; dir: readonly string[] }>> =
-  Object.freeze({
-    // Grok's agents home: `GROK_AGENTS_HOME`, else `~/.agents` (dir = path segments under $HOME).
-    grok: Object.freeze({ env: 'GROK_AGENTS_HOME', dir: Object.freeze(['.agents']) }),
-  });
+  Object.freeze({});
 
 export const LEGACY_NON_REGISTRY_RUNTIME_IDS: ReadonlySet<string> = new Set(
   Object.keys(LEGACY_NON_REGISTRY_RUNTIME_HOMES),
@@ -505,6 +498,8 @@ const RUNTIME_LABELS: Readonly<Record<string, string>> = {
   cline: 'Cline',
   zcode: 'ZCode',
   pi: 'pi',
+  grok: 'Grok Build',
+  vibe: 'Mistral Vibe',
   // #2103: vscode is a registered (role:runtime) capability for validator +
   // host-integration coverage, even though it is never CLI-installed (no
   // --vscode flag — see NON_INSTALLABLE_RUNTIMES in tests/runtime-flags.test.cjs).
@@ -595,7 +590,7 @@ export function getGlobalConfigHomeFragment(runtime: string): string {
 // folds the shared-hooks-install skip).
 const RUNTIME_FLAG_IDS = Object.freeze([
   'opencode', 'kilo', 'codex', 'copilot', 'antigravity', 'cursor',
-  'windsurf', 'augment', 'trae', 'qwen', 'hermes', 'codebuddy', 'cline', 'kimi', 'kimi-code', 'zcode', 'pi',
+  'windsurf', 'augment', 'trae', 'qwen', 'hermes', 'codebuddy', 'cline', 'kimi', 'kimi-code', 'zcode', 'pi', 'grok', 'vibe',
 ] as const);
 
 /**

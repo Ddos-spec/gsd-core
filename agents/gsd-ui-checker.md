@@ -114,20 +114,23 @@ fix_hint: "Replace with action-specific label like 'Send Message' or 'Create Acc
 
 ## Dimension 2: Visuals
 
-**Question:** Are focal points and visual hierarchy declared?
+**Question:** Does the contract define a product-specific visual concept and a clear first-screen hierarchy?
 
 **FLAG if:**
+- Audience, primary user job, or creative direction is missing
+- Creative direction is only a generic adjective (for example, "modern" or "clean") with no concrete composition or visual choice
 - No focal point declared for primary screen
 - Icon-only actions declared without label fallback for accessibility
 - No visual hierarchy indicated (what draws the eye first?)
+- Assumptions that shape the visual direction have no evidence or rationale
 
 **Example issue:**
 ```yaml
 dimension: 2
 severity: FLAG
 required_property: "Each screen declares one primary visual anchor"
-description: "No focal point declared — executor will guess visual priority"
-fix_hint: "Declare which element is the primary visual anchor on the main screen"
+description: "No product-specific visual concept or focal point is declared — executor will guess the design direction and visual priority"
+fix_hint: "Name the audience and primary job, then describe a concrete composition and its primary visual anchor"
 ```
 
 ## Dimension 3: Color

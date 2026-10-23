@@ -299,6 +299,8 @@ grep -rn "went wrong\|try again\|error occurred" src --include="*.tsx" --include
 
 **Audit method:** Check component structure, visual hierarchy indicators.
 
+- Compare rendered screenshots with the UI-SPEC's audience, creative direction, composition, primary anchor, and distinctive detail; cite visible evidence for each material match or deviation.
+- If no screenshot was captured, state that visual direction was not verified in a browser and do not award a top visual score based only on source inspection.
 - Is there a clear focal point on the main screen?
 - Are icon-only buttons paired with aria-labels or tooltips?
 - Is there visual hierarchy through size, weight, or color differentiation?

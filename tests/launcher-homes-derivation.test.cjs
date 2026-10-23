@@ -72,11 +72,12 @@ describe('_gsd_homes is rendered from the descriptors', () => {
     );
   });
 
-  test('claude is probed first; the legacy non-registry home is probed last', () => {
+  test('claude is probed first; Grok and Vibe homes are derived from registered descriptors', () => {
     const text = sync.loadDerivedHomes();
     const list = text.slice(text.indexOf('set -- ') + 'set -- '.length, text.indexOf('; for _h; do '));
     assert.ok(list.startsWith('"${CLAUDE_CONFIG_DIR:-$HOME/.claude}" "'), 'claude is the first element');
-    assert.ok(list.slice(list.lastIndexOf(' "')).includes('GROK_AGENTS_HOME'), 'the legacy home is the last element');
+    assert.ok(text.includes('${GROK_HOME:-'), 'Grok config home uses GROK_HOME');
+    assert.ok(text.includes('${VIBE_HOME:-'), 'Vibe config home uses VIBE_HOME');
   });
 
   test('the shim suffix is written once, in the loop body, not once per home (the preamble ships in ~240 files)', () => {

@@ -72,6 +72,18 @@ This ensures the design contract aligns with project-specific conventions and li
 If upstream artifacts answer a design contract question, do NOT re-ask it. Pre-populate the contract and confirm.
 </upstream_input>
 
+<auto_mode_policy>
+The orchestrator supplies `<execution_mode>` with `auto_mode: true` or `auto_mode: false`.
+
+When `auto_mode` is true:
+- Do not ask the user to confirm visual preferences or project-derived decisions. Choose concrete values from the product purpose, audience, requirements, existing UI, brand assets, installed design system, and repository conventions.
+- When evidence is incomplete, choose a coherent, low-risk direction, record the assumption and its rationale in the UI-SPEC, and continue. Do not turn ordinary design discretion into a blocker.
+- Do not initialize shadcn, install packages, or add a third-party registry just to create a design system. Reuse the existing stack, or specify a project-native/manual system.
+- Never approve a flagged dependency, unsafe registry source, destructive action, external write, or deployment on the user's behalf. If one is essential and cannot be made safe from repository evidence, return a precise blocker instead of asking an open-ended design questionnaire.
+
+When `auto_mode` is false, batch only unanswered questions whose answers would materially change the user's product or brand. Resolve typography, spacing, palette, and component details with project evidence and standard defaults whenever practical.
+</auto_mode_policy>
+
 <downstream_consumer>
 Your UI-SPEC.md is consumed by:
 
@@ -125,6 +137,8 @@ Run this logic before proceeding to design contract questions:
 
 **IF `components.json` NOT found AND tech stack is React/Next.js/Vite:**
 
+**If `auto_mode` is true:** Do not ask to initialize shadcn and do not run `npx shadcn init`. Reuse the repository's current components and styling approach; if none exists, document `Tool: none` and propose a project-native token system. Continue to the design contract without creating dependencies.
+
 Ask the user:
 ```
 No design system detected. shadcn is strongly recommended for design
@@ -136,7 +150,7 @@ consistency across phases. Initialize now? [Y/n]
 
 **IF `components.json` found:**
 
-Read preset from `npx shadcn info` output. Pre-populate design contract with detected values. Ask user to confirm or override each value.
+Read preset from `npx shadcn info` output. Pre-populate design contract with detected values. In auto mode, do not ask the user to confirm values already established by the repository; record any assumption for unresolved choices.
 
 </shadcn_gate>
 
@@ -208,6 +222,12 @@ entirely when `Tool: none`.
 
 Ask ONLY what REQUIREMENTS.md, CONTEXT.md, and RESEARCH.md did not already answer.
 
+### Product and Visual Direction
+- Identify the audience, use context, and primary user job from the brief and repository.
+- Choose a specific visual concept that fits that product; avoid vague labels like "modern" or "clean" without a concrete composition, typography, or visual detail.
+- Name the first-screen composition, one primary visual anchor, one memorable product-relevant detail, and patterns to avoid for this audience.
+- Record the evidence behind each decision. In auto mode, label reasonable defaults as assumptions and keep moving.
+
 ### Spacing
 - Confirm 8-point scale: 4, 8, 16, 24, 32, 48, 64
 - Any exceptions for this phase? (e.g. icon-only touch targets at 44px)
@@ -273,7 +293,7 @@ Use template from `__GSD_PI_ENGINE_ROOT__/gsd-core/templates/UI-SPEC.md`.
 
 Write to: `$PHASE_DIR/$PADDED_PHASE-UI-SPEC.md`
 
-Fill all sections from the template. For each field:
+Fill all sections from the template, including Product and Visual Direction and Assumptions and Rationale. For each field:
 1. If answered by upstream artifacts → pre-populate, note source
 2. If answered by user during this session → use user's answer
 3. If unanswered and has a sensible default → use default, note as default
@@ -322,8 +342,8 @@ Run the shadcn initialization gate from `<shadcn_gate>`, then the enumeration ga
 
 For each category in `<design_contract_questions>`:
 - Skip if upstream artifacts already answered
-- Ask user if not answered and no sensible default
-- Use defaults if category has obvious standard values
+- In auto mode, choose and record a rationale-backed default for every unanswered visual choice
+- In interactive mode, ask only if the answer materially changes product identity or behavior and no sensible default exists
 
 Batch questions into a single interaction where possible.
 
@@ -349,7 +369,7 @@ This file is the canonical output of this agent. The orchestrator reads `$PHASE_
 ## Step 6: Commit (optional)
 
 ```bash
-_GSD_SHIM_NAME="gsd-tools.cjs"; _GSD_RUNTIME_ROOT="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"; GSD_TOOLS="${_GSD_RUNTIME_ROOT}/gsd-core/bin/${_GSD_SHIM_NAME}"; _gsd_at() { for _p; do if [ -f "$_p" ]; then GSD_TOOLS="$_p"; return 0; fi; done; return 1; }; _gsd_id_ok() { case "$("$1" runtime-identity --raw 2>/dev/null || true)" in '{"packageName":"@opengsd/gsd-core"'*'}') return 0;; *) return 1;; esac; }; _gsd_homes() { set -- "${CLAUDE_CONFIG_DIR:-__GSD_PI_ENGINE_ROOT__}" "${ANTIGRAVITY_CONFIG_DIR:-$HOME/.gemini/antigravity}" "$HOME/.gemini/antigravity-ide" "$HOME/.gemini/antigravity-cli" "${AUGMENT_CONFIG_DIR:-$HOME/.augment}" "${CLINE_CONFIG_DIR:-$HOME/.cline}" "${CODEBUDDY_CONFIG_DIR:-$HOME/.codebuddy}" "${CODEX_HOME:-$HOME/.codex}" "${COPILOT_CONFIG_DIR:-${COPILOT_HOME:-$HOME/.copilot}}" "${CURSOR_CONFIG_DIR:-$HOME/.cursor}" "${HERMES_HOME:-$HOME/.hermes}" "${KILO_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/kilo}" "${KIMI_CONFIG_DIR:-$HOME/.config/agents}" "$HOME/.agents" "${KIMI_CODE_HOME:-$HOME/.kimi-code}" "${OPENCODE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/opencode}" "${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}" "${QWEN_CONFIG_DIR:-$HOME/.qwen}" "${TRAE_CONFIG_DIR:-$HOME/.trae}" "${WINDSURF_CONFIG_DIR:-$HOME/.codeium/windsurf}" "${ZCODE_CONFIG_DIR:-$HOME/.zcode}" "${GROK_AGENTS_HOME:-$HOME/.agents}"; for _h; do _gsd_at "$_h/gsd-core/bin/${_GSD_SHIM_NAME}" && return 0; done; return 1; }; if _gsd_at "${_GSD_RUNTIME_ROOT}/gsd-core/bin/${_GSD_SHIM_NAME}" "${_GSD_RUNTIME_ROOT}/.claude/gsd-core/bin/${_GSD_SHIM_NAME}" "${_GSD_RUNTIME_ROOT}/.codex/gsd-core/bin/${_GSD_SHIM_NAME}"; then gsd_run() { node "$GSD_TOOLS" "$@"; }; elif _gsd_homes; then gsd_run() { node "$GSD_TOOLS" "$@"; }; elif unset -f gsd_run; _G="$(command -v gsd_run)"; [ -n "$_G" ] && _gsd_id_ok "$_G"; then GSD_TOOLS="$_G"; gsd_run() { "$GSD_TOOLS" "$@"; }; else echo "ERROR: gsd-tools.cjs not found at $GSD_TOOLS and no identity-proving gsd_run is on PATH. Run: npx -y @opengsd/gsd-core@latest --claude --local" >&2; exit 1; fi; GSD_IDENTITY_STATUS=unverified; _gsd_id_ok gsd_run && GSD_IDENTITY_STATUS=ok; export GSD_IDENTITY_STATUS; [ "$GSD_IDENTITY_STATUS" = ok ] || echo "WARNING: \"$GSD_TOOLS\" did not prove it is @opengsd/gsd-core - it is either a different package or an @opengsd/gsd-core older than the runtime-identity verb. See docs/how-to/diagnose-a-foreign-gsd-tools.md" >&2; if [ -n "${CLAUDE_ENV_FILE:-}" ] && [ -n "${GSD_TOOLS:-}" ]; then printf "export PATH='%s':\"\$PATH\"\n" "${GSD_TOOLS%/*}" >> "$CLAUDE_ENV_FILE" 2>/dev/null || true; fi
+_GSD_SHIM_NAME="gsd-tools.cjs"; _GSD_RUNTIME_ROOT="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"; GSD_TOOLS="${_GSD_RUNTIME_ROOT}/gsd-core/bin/${_GSD_SHIM_NAME}"; _gsd_at() { for _p; do if [ -f "$_p" ]; then GSD_TOOLS="$_p"; return 0; fi; done; return 1; }; _gsd_id_ok() { case "$("$1" runtime-identity --raw 2>/dev/null || true)" in '{"packageName":"@opengsd/gsd-core"'*'}') return 0;; *) return 1;; esac; }; _gsd_homes() { set -- "${CLAUDE_CONFIG_DIR:-__GSD_PI_ENGINE_ROOT__}" "${ANTIGRAVITY_CONFIG_DIR:-$HOME/.gemini/antigravity}" "$HOME/.gemini/antigravity-ide" "$HOME/.gemini/antigravity-cli" "${AUGMENT_CONFIG_DIR:-$HOME/.augment}" "${CLINE_CONFIG_DIR:-$HOME/.cline}" "${CODEBUDDY_CONFIG_DIR:-$HOME/.codebuddy}" "${CODEX_HOME:-$HOME/.codex}" "${COPILOT_CONFIG_DIR:-${COPILOT_HOME:-$HOME/.copilot}}" "${CURSOR_CONFIG_DIR:-$HOME/.cursor}" "${GROK_HOME:-$HOME/.grok}" "${HERMES_HOME:-$HOME/.hermes}" "${KILO_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/kilo}" "${KIMI_CONFIG_DIR:-$HOME/.config/agents}" "$HOME/.agents" "${KIMI_CODE_HOME:-$HOME/.kimi-code}" "${OPENCODE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/opencode}" "${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}" "${QWEN_CONFIG_DIR:-$HOME/.qwen}" "${TRAE_CONFIG_DIR:-$HOME/.trae}" "${VIBE_HOME:-$HOME/.vibe}" "${WINDSURF_CONFIG_DIR:-$HOME/.codeium/windsurf}" "${ZCODE_CONFIG_DIR:-$HOME/.zcode}"; for _h; do _gsd_at "$_h/gsd-core/bin/${_GSD_SHIM_NAME}" && return 0; done; return 1; }; if _gsd_at "${_GSD_RUNTIME_ROOT}/gsd-core/bin/${_GSD_SHIM_NAME}" "${_GSD_RUNTIME_ROOT}/.claude/gsd-core/bin/${_GSD_SHIM_NAME}" "${_GSD_RUNTIME_ROOT}/.codex/gsd-core/bin/${_GSD_SHIM_NAME}"; then gsd_run() { node "$GSD_TOOLS" "$@"; }; elif _gsd_homes; then gsd_run() { node "$GSD_TOOLS" "$@"; }; elif unset -f gsd_run; _G="$(command -v gsd_run)"; [ -n "$_G" ] && _gsd_id_ok "$_G"; then GSD_TOOLS="$_G"; gsd_run() { "$GSD_TOOLS" "$@"; }; else echo "ERROR: gsd-tools.cjs not found at $GSD_TOOLS and no identity-proving gsd_run is on PATH. Run: npx -y @opengsd/gsd-core@latest --claude --local" >&2; exit 1; fi; GSD_IDENTITY_STATUS=unverified; _gsd_id_ok gsd_run && GSD_IDENTITY_STATUS=ok; export GSD_IDENTITY_STATUS; [ "$GSD_IDENTITY_STATUS" = ok ] || echo "WARNING: \"$GSD_TOOLS\" did not prove it is @opengsd/gsd-core - it is either a different package or an @opengsd/gsd-core older than the runtime-identity verb. See docs/how-to/diagnose-a-foreign-gsd-tools.md" >&2; if [ -n "${CLAUDE_ENV_FILE:-}" ] && [ -n "${GSD_TOOLS:-}" ]; then printf "export PATH='%s':\"\$PATH\"\n" "${GSD_TOOLS%/*}" >> "$CLAUDE_ENV_FILE" 2>/dev/null || true; fi
 gsd_run query commit "docs($PHASE): UI design contract" --files "$PHASE_DIR/$PADDED_PHASE-UI-SPEC.md"
 ```
 

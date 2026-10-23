@@ -1300,6 +1300,53 @@ function convertClaudeCommandToAntigravitySkill(content, skillName, _runtime = n
   return `${fm}\n${body}`;
 }
 
+const GROK_SKILL_ADAPTER = `<grok_skill_adapter>
+## End-to-End Execution
+- Continue through the requested GSD workflow: inspect, plan, implement, verify, and summarize the finished result.
+- Make reversible implementation choices from repository evidence; ask the user only when missing information blocks a safe or correct result, or an external action needs authorization.
+- Use the tools available in the active Grok Build session and adapt to their names and limits.
+- Keep going after delegated work returns: integrate it, run relevant checks, and fix failures before reporting completion.
+</grok_skill_adapter>`;
+
+/**
+ * Project a GSD command markdown file as an invocable Grok Build Agent Skill.
+ * Grok supports its native ~/.grok/skills root and Claude-style skill files;
+ * the GSD-specific name/description metadata and command separator are
+ * normalized here. Runtime path references are converted by the descriptor's
+ * content-rewrite profile. Hook and agent-profile projection are separate
+ * runtime surfaces and are deliberately not implied by this converter.
+ */
+function convertClaudeCommandToGrokSkill(content, skillName) {
+  const { frontmatter, body } = extractFrontmatterAndBody(content);
+  const name = skillName || (frontmatter && extractFrontmatterField(frontmatter, 'name')) || 'gsd-workflow';
+  const description = (frontmatter && extractFrontmatterField(frontmatter, 'description')) || `Run GSD workflow ${name}.`;
+  const normalizedBody = (frontmatter ? body : content).replace(/gsd:/gi, 'gsd-');
+  return `---\nname: ${yamlQuote(name)}\ndescription: ${yamlQuote(toSingleLine(description))}\nuser-invocable: true\n---\n\n${GROK_SKILL_ADAPTER}\n\n${normalizedBody.trimStart()}`;
+}
+
+const VIBE_SKILL_ADAPTER = `<vibe_skill_adapter>
+## End-to-End Execution
+- Continue through the requested GSD workflow: inspect, plan, implement, verify, and summarize the finished result.
+- Make reversible implementation choices from repository evidence; ask the user only when missing information blocks a safe or correct result, or an external action needs authorization.
+- Use Vibe's native tools, including \`bash\`, \`read_file\`, \`edit\`, \`grep\`, and \`task\` when those tools are available.
+- Keep going after delegated work returns: integrate it, run the relevant checks, and fix failures before reporting completion.
+</vibe_skill_adapter>`;
+
+/**
+ * Project a GSD command markdown file as a Mistral Vibe Agent Skill.
+ * Vibe requires user-invocable skills for slash commands and appends the user's
+ * arguments after the skill body instead of substituting Claude's $ARGUMENTS.
+ */
+function convertClaudeCommandToVibeSkill(content, skillName) {
+  const { frontmatter, body } = extractFrontmatterAndBody(content);
+  const name = skillName || (frontmatter && extractFrontmatterField(frontmatter, 'name')) || 'gsd-workflow';
+  const description = (frontmatter && extractFrontmatterField(frontmatter, 'description')) || `Run GSD workflow ${name}.`;
+  const normalizedBody = replaceArgumentsPlaceholderOutsideFences(
+    (frontmatter ? body : content).replace(/gsd:/gi, 'gsd-'),
+  );
+  return `---\nname: ${yamlQuote(name)}\ndescription: ${yamlQuote(toSingleLine(description))}\nuser-invocable: true\n---\n\n${VIBE_SKILL_ADAPTER}\n\n${normalizedBody.trimStart()}`;
+}
+
 function toSingleLine(value) {
   return value.replace(/\s+/g, ' ').trim();
 }
@@ -4396,6 +4443,8 @@ export = {
   applyClaudeCodeBrandSwap,
   convertClaudeToAugmentMarkdown,
   convertClaudeCommandToAugmentSkill,
+  convertClaudeCommandToGrokSkill,
+  convertClaudeCommandToVibeSkill,
   convertClaudeToTraeMarkdown,
   convertClaudeCommandToTraeSkill,
   convertClaudeToCodebuddyMarkdown,

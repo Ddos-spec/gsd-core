@@ -64,7 +64,7 @@ function builtLib() {
 
 // Config-location vars that are neither in the registry nor descriptor-shaped,
 // each with its reader:
-//   GROK_AGENTS_HOME — hardcoded `grok` branch in getGlobalConfigDir (src/runtime-homes.cts)
+//   Runtime home overrides derive from capability descriptors; no Grok legacy branch remains.
 //   GSD_RUNTIME      — selects WHICH runtime home resolves (src/model-resolver.cts)
 //   GSD_PROJECT      — planningDir() project segment (src/planning-workspace.cts)
 //   GSD_WORKSTREAM   — planningDir() workstream segment (src/planning-workspace.cts)
@@ -74,7 +74,6 @@ function builtLib() {
 // NON_REGISTRY_CONFIG_HOME_DESCRIPTORS, because hand-adding each var a reviewer
 // names is precisely what reopened this bug three times.
 const NON_REGISTRY_CONFIG_LOCATION_ENV_KEYS = [
-  'GROK_AGENTS_HOME',
   'GSD_RUNTIME',
   'GSD_PROJECT',
   'GSD_WORKSTREAM',

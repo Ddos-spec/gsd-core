@@ -539,7 +539,7 @@ function resolveCapabilityRuntimeState(
   // by profile-output.cjs and the rest of the runtime resolution chain).
   // getGlobalConfigDir(detectedRuntime) is then called, which honours the
   // runtime-specific env-var override (CLAUDE_CONFIG_DIR, CODEX_HOME,
-  // CURSOR_CONFIG_DIR, GROK_AGENTS_HOME, etc.) correctly and without
+  // CURSOR_CONFIG_DIR, GROK_HOME, etc.) correctly and without
   // fabricating env vars that don't exist upstream.
   let resolvedConfigDir: string = runtimeConfigDir || '';
   if (!resolvedConfigDir) {

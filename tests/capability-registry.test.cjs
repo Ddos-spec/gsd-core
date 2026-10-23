@@ -4413,10 +4413,10 @@ describe('ADR-857 phase 5e: VALID_CONVERTER_NAMES closed enum', () => {
   // are genuinely new agent converters (not renamed/leftover), so the agent
   // count grows from 11 to 14; the 16 command/skill/workflow converters are
   // unchanged. #5547 adds convertClaudeCommandToPiSkill (pi's skills kind), so
-  // the command/skill/workflow count grows from 16 to 17.
-  test('VALID_CONVERTER_NAMES has exactly 32 entries (17 command/skill/workflow + 15 agent converters)', () => {
+  // Grok Build and Mistral Vibe add two skill projections, bringing that group to 19.
+  test('VALID_CONVERTER_NAMES has exactly 34 entries (19 command/skill/workflow + 15 agent converters)', () => {
     assert.ok(VALID_CONVERTER_NAMES instanceof Set, 'VALID_CONVERTER_NAMES must be a Set');
-    assert.strictEqual(VALID_CONVERTER_NAMES.size, 32, 'VALID_CONVERTER_NAMES must have exactly 32 entries, got: ' + VALID_CONVERTER_NAMES.size);
+    assert.strictEqual(VALID_CONVERTER_NAMES.size, 34, 'VALID_CONVERTER_NAMES must have exactly 34 entries, got: ' + VALID_CONVERTER_NAMES.size);
   });
 
   test('VALID_CONVERTER_NAMES contains all expected converter names', () => {
@@ -4431,11 +4431,13 @@ describe('ADR-857 phase 5e: VALID_CONVERTER_NAMES closed enum', () => {
       'convertClaudeCommandToCodexSkill',
       'convertClaudeCommandToCopilotSkill',
       'convertClaudeCommandToCursorSkill',
+      'convertClaudeCommandToGrokSkill',
       'convertClaudeCommandToKiloSkill',
       'convertClaudeCommandToKimiSkill',
       'convertClaudeCommandToOpencodeSkill',
       'convertClaudeCommandToPiSkill',
       'convertClaudeCommandToTraeSkill',
+      'convertClaudeCommandToVibeSkill',
       'convertClaudeCommandToWindsurfSkill',
       'convertClaudeCommandToWindsurfWorkflow',
       // agent converters (#1173 — descriptor-driven agent conversion wiring)

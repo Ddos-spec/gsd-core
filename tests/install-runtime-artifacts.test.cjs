@@ -92,6 +92,7 @@ const {
 const {
   resolveRuntimeArtifactLayout,
 } = require('../gsd-core/bin/lib/runtime-artifact-layout.cjs');
+const { getGlobalConfigDir, getGlobalSkillsBase } = require('../gsd-core/bin/lib/runtime-homes.cjs');
 
 const { applySurface } = require('../gsd-core/bin/lib/surface.cjs');
 const { escapeRegex } = require('../gsd-core/bin/lib/pattern.cjs');
@@ -501,13 +502,13 @@ describe('installRuntimeArtifacts — durable Runtime Surface corpus (#4132)', (
 
 const SKILLS_RUNTIMES_LAYOUT = [
   'claude', 'cursor', 'codex', 'copilot', 'antigravity',
-  'augment', 'trae', 'qwen', 'kimi', 'codebuddy',
+  'augment', 'trae', 'qwen', 'kimi', 'codebuddy', 'grok', 'vibe',
 ];
 
 const ALL_RUNTIMES_LAYOUT = [
   'claude', 'cursor', 'codex', 'copilot', 'antigravity',
   'windsurf', 'augment', 'trae', 'qwen', 'hermes', 'codebuddy',
-  'cline', 'kimi', 'opencode', 'kilo',
+  'cline', 'kimi', 'opencode', 'kilo', 'grok', 'vibe',
 ];
 
 function countPrefixedEntries(destDir, prefix) {
@@ -554,6 +555,14 @@ describe('installRuntimeArtifacts — skills runtimes write gsd-prefixed skill d
       t.after(() => cleanup(configDir));
       sandboxHome(t, configDir);
 
+      const runtimeHomeEnv = runtime === 'grok' ? 'GROK_HOME' : runtime === 'vibe' ? 'VIBE_HOME' : null;
+      const savedRuntimeHome = runtimeHomeEnv ? process.env[runtimeHomeEnv] : undefined;
+      if (runtimeHomeEnv) delete process.env[runtimeHomeEnv];
+      if (runtimeHomeEnv) t.after(() => {
+        if (savedRuntimeHome === undefined) delete process.env[runtimeHomeEnv];
+        else process.env[runtimeHomeEnv] = savedRuntimeHome;
+      });
+
       assert.strictEqual(typeof installRuntimeArtifacts, 'function');
       installRuntimeArtifacts(runtime, configDir, 'global', RESOLVED_CORE);
 
@@ -567,6 +576,17 @@ describe('installRuntimeArtifacts — skills runtimes write gsd-prefixed skill d
         fs.existsSync(path.join(destDir, `${skillsKind.prefix}help`, 'SKILL.md')),
         `${runtime}: ${skillsKind.prefix}help/SKILL.md must exist`
       );
+
+      if (runtime === 'grok' || runtime === 'vibe') {
+        const skillPath = path.join(destDir, `${skillsKind.prefix}help`, 'SKILL.md');
+        const skillContent = fs.readFileSync(skillPath, 'utf8');
+        assert.match(skillContent, /^name: ["']?gsd-help["']?$/m, `${runtime}: converted skill name`);
+        assert.match(skillContent, /^description: .+$/m, `${runtime}: skill description is discoverable`);
+        assert.match(skillContent, /^user-invocable: true$/m, `${runtime}: skill appears as a slash command`);
+        assert.match(skillContent, /End-to-End Execution/, `${runtime}: end-to-end adapter is installed`);
+        assert.match(skillContent, /inspect, plan, implement, verify, and summarize/, `${runtime}: execution loop is installed`);
+        assert.match(skillContent, /ask the user only when missing information blocks/, `${runtime}: avoidable handoffs are reduced`);
+      }
 
       if (runtime === 'kimi') {
         const newProjectSkill = path.join(destDir, 'gsd-new-project', 'SKILL.md');
@@ -609,6 +629,89 @@ describe('installRuntimeArtifacts — skills runtimes write gsd-prefixed skill d
       }
     });
   }
+});
+
+describe('installRuntimeArtifacts — --all target runtimes keep runtime-specific global skills isolated', () => {
+  test('Codex, Claude, Antigravity, Grok, and Vibe retain their own converted skill under one home', (t) => {
+    const home = createTempDir('gsd-all-runtime-skills-');
+    t.after(() => cleanup(home));
+    sandboxHome(t, home);
+
+    for (const runtime of ['codex', 'claude', 'antigravity', 'grok', 'vibe']) {
+      installRuntimeArtifacts(runtime, getGlobalConfigDir(runtime), 'global', RESOLVED_CORE);
+    }
+
+    const skillsRoots = new Map();
+    for (const runtime of ['codex', 'claude', 'antigravity', 'grok', 'vibe']) {
+      const runtimeConfigDir = getGlobalConfigDir(runtime);
+      const layout = resolveRuntimeArtifactLayout(runtime, runtimeConfigDir, 'global');
+      const skillsKind = layout.kinds.find((kind) => kind.kind === 'skills');
+      assert.ok(skillsKind, `${runtime} has a skills output`);
+      const root = path.join(skillsKind.home || runtimeConfigDir, skillsKind.destSubpath);
+      skillsRoots.set(runtime, root);
+      const skillPath = path.join(root, `${skillsKind.prefix}help`, 'SKILL.md');
+      assert.ok(fs.existsSync(skillPath), `${runtime} skill remains installed after the complete pass`);
+      const content = fs.readFileSync(skillPath, 'utf8');
+      if (runtime === 'codex') assert.match(content, /<codex_skill_adapter>/);
+      if (runtime === 'grok') assert.match(content, /<grok_skill_adapter>/);
+      if (runtime === 'vibe') assert.match(content, /<vibe_skill_adapter>/);
+      if (runtime === 'antigravity') assert.doesNotMatch(content, /<(?:codex|grok|vibe)_skill_adapter>/);
+    }
+
+    assert.equal(new Set(skillsRoots.values()).size, skillsRoots.size,
+      'runtime-specific converters must not overwrite another host sharing the global home');
+  });
+
+  test('Grok and Vibe CLI installs rewrite workflow includes to their own GSD homes', (t) => {
+    const home = createTempDir('gsd-grok-vibe-cli-global-');
+    t.after(() => cleanup(home));
+    sandboxHome(t, home);
+
+    const result = runNode([INSTALL_SCRIPT, '--grok', '--vibe', '--global', '--profile=core'], {
+      cwd: path.join(__dirname, '..'),
+      env: installerEnv({ HOME: home, USERPROFILE: home, GSD_HOME: path.join(home, '.gsd') }),
+      timeoutMs: 90_000,
+    });
+    assert.equal(result.exitCode, 0,
+      `Grok/Vibe CLI install failed (outcome=${result.outcome}):\n${result.stdout}\n${result.stderr}`);
+
+    for (const runtime of ['grok', 'vibe']) {
+      const skillPath = path.join(getGlobalSkillsBase(runtime), 'gsd-help', 'SKILL.md');
+      assert.ok(fs.existsSync(skillPath), `${runtime} must receive gsd-help at ${skillPath}`);
+      const content = fs.readFileSync(skillPath, 'utf8');
+      assert.ok(content.includes(`@~/.${runtime}/gsd-core/workflows/help.md`),
+        `${runtime} must reference its own installed workflow tree`);
+      assert.doesNotMatch(content, /@~\/.claude\/gsd-core\//,
+        `${runtime} skill must not require Claude's separate install`);
+    }
+  });
+
+  test('--all --global CLI installs the five requested runtimes into distinct, discoverable roots', (t) => {
+    const home = createTempDir('gsd-all-cli-global-');
+    t.after(() => cleanup(home));
+    sandboxHome(t, home);
+
+    const result = runNode([INSTALL_SCRIPT, '--all', '--global', '--profile=core'], {
+      cwd: path.join(__dirname, '..'),
+      env: installerEnv({ HOME: home, USERPROFILE: home, GSD_HOME: path.join(home, '.gsd') }),
+      timeoutMs: 240_000,
+    });
+    assert.equal(result.exitCode, 0,
+      `--all global install failed (outcome=${result.outcome}):\n${result.stdout}\n${result.stderr}`);
+
+    const runtimes = ['codex', 'claude', 'antigravity', 'grok', 'vibe'];
+    const roots = runtimes.map((runtime) => getGlobalSkillsBase(runtime));
+    assert.equal(new Set(roots).size, roots.length, 'each requested runtime must own a distinct global skills root');
+    for (const runtime of runtimes) {
+      const root = getGlobalSkillsBase(runtime);
+      const skillPath = path.join(root, 'gsd-help', 'SKILL.md');
+      assert.ok(fs.existsSync(skillPath), `${runtime} must receive the installed gsd-help skill at ${skillPath}`);
+      const content = fs.readFileSync(skillPath, 'utf8');
+      if (runtime === 'codex') assert.match(content, /<codex_skill_adapter>/);
+      if (runtime === 'grok') assert.match(content, /<grok_skill_adapter>/);
+      if (runtime === 'vibe') assert.match(content, /<vibe_skill_adapter>/);
+    }
+  });
 });
 
 describe('installRuntimeArtifacts — hermes nested layout', () => {

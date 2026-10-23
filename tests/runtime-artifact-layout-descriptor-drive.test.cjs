@@ -261,6 +261,18 @@ const GOLDEN = {
     { kind: 'skills',   destSubpath: 'skills',  prefix: 'gsd-' },
     { kind: 'agents',   destSubpath: 'agents',  prefix: 'gsd-' },
   ],
+  'grok/global': [
+    { kind: 'skills', destSubpath: 'skills', prefix: 'gsd-' },
+  ],
+  'grok/local': [
+    { kind: 'skills', destSubpath: 'skills', prefix: 'gsd-' },
+  ],
+  'vibe/global': [
+    { kind: 'skills', destSubpath: 'skills', prefix: 'gsd-' },
+  ],
+  'vibe/local': [
+    { kind: 'skills', destSubpath: 'skills', prefix: 'gsd-' },
+  ],
 };
 
 // ── Parametrized tests ────────────────────────────────────────────────────────
@@ -268,7 +280,7 @@ const GOLDEN = {
 const RUNTIMES = [
   'claude', 'cursor', 'codex', 'copilot',
   'antigravity', 'windsurf', 'augment', 'trae', 'qwen',
-  'hermes', 'codebuddy', 'cline', 'kimi', 'opencode', 'kilo',
+  'hermes', 'codebuddy', 'cline', 'kimi', 'opencode', 'kilo', 'grok', 'vibe',
 ];
 
 for (const runtime of RUNTIMES) {
@@ -331,14 +343,14 @@ for (const runtime of RUNTIMES) {
 // Missing descriptors reproduce the old loud-fail behaviour.
 
 describe('resolveRuntimeArtifactLayout — unknown runtime (descriptor-driven)', () => {
-  test('throws TypeError for grok (no artifact layout descriptor)', () => {
+  test('throws TypeError for unknown future runtime without an artifact descriptor', () => {
     assert.throws(
-      () => resolveRuntimeArtifactLayout('grok', FAKE_DIR, 'global'),
+      () => resolveRuntimeArtifactLayout('future-runtime-without-layout', FAKE_DIR, 'global'),
       (err) => {
         assert.ok(err instanceof TypeError, 'must be TypeError');
         assert.ok(
-          err.message.includes("Unknown runtime: 'grok'"),
-          `message must include "Unknown runtime: 'grok'" — got: ${err.message}`,
+          err.message.includes("Unknown runtime: 'future-runtime-without-layout'"),
+          `message must include the requested runtime id — got: ${err.message}`,
         );
         return true;
       },

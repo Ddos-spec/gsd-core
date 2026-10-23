@@ -57,7 +57,7 @@ function withEnv(overrides, fn) {
 // All env vars for all runtimes — cleared in each test that calls getGlobalConfigDir directly
 const ALL_ENV_KEYS = [
   'CLAUDE_CONFIG_DIR', 'CURSOR_CONFIG_DIR', 'CODEX_HOME',
-  'GROK_AGENTS_HOME', 'COPILOT_CONFIG_DIR', 'COPILOT_HOME', 'ANTIGRAVITY_CONFIG_DIR',
+  'GROK_HOME', 'VIBE_HOME', 'COPILOT_CONFIG_DIR', 'COPILOT_HOME', 'ANTIGRAVITY_CONFIG_DIR',
   'WINDSURF_CONFIG_DIR', 'AUGMENT_CONFIG_DIR', 'TRAE_CONFIG_DIR', 'QWEN_CONFIG_DIR',
   'HERMES_HOME', 'CODEBUDDY_CONFIG_DIR', 'CLINE_CONFIG_DIR', 'KIMI_CONFIG_DIR',
   'OPENCODE_CONFIG_DIR', 'OPENCODE_CONFIG', 'KILO_CONFIG_DIR', 'KILO_CONFIG',
@@ -90,7 +90,8 @@ const GOLDEN_DEFAULTS = {
   claude:      path.join(HOME, '.claude'),
   cursor:      path.join(HOME, '.cursor'),
   codex:       path.join(HOME, '.codex'),
-  grok:        path.join(HOME, '.agents'),
+  grok:        path.join(HOME, '.grok'),
+  vibe:        path.join(HOME, '.vibe'),
   copilot:     path.join(HOME, '.copilot'),
   antigravity: path.join(HOME, '.gemini', 'antigravity'),  // probe-miss → first candidate
   windsurf:    path.join(HOME, '.codeium', 'windsurf'),
@@ -156,7 +157,8 @@ describe('descriptor-driven equivalence: env-var overrides', () => {
     { runtime: 'claude',    envKey: 'CLAUDE_CONFIG_DIR',    value: '/custom/claude' },
     { runtime: 'cursor',    envKey: 'CURSOR_CONFIG_DIR',    value: '/custom/cursor' },
     { runtime: 'codex',     envKey: 'CODEX_HOME',           value: '/custom/codex' },
-    { runtime: 'grok',      envKey: 'GROK_AGENTS_HOME',     value: '/custom/grok' },
+    { runtime: 'grok',      envKey: 'GROK_HOME',            value: '/custom/grok' },
+    { runtime: 'vibe',      envKey: 'VIBE_HOME',            value: '/custom/vibe' },
     { runtime: 'augment',   envKey: 'AUGMENT_CONFIG_DIR',   value: '/custom/augment' },
     { runtime: 'trae',      envKey: 'TRAE_CONFIG_DIR',      value: '/custom/trae' },
     { runtime: 'qwen',      envKey: 'QWEN_CONFIG_DIR',      value: '/custom/qwen' },
@@ -1053,27 +1055,42 @@ describe('descriptor-driven equivalence: explicitDir short-circuit', () => {
   });
 });
 
-// ── GOLDEN GROK (not in registry, hardcoded) ──────────────────────────────────
+// ── GOLDEN GROK AND VIBE (descriptor-backed runtime homes) ────────────────────
 
-describe('descriptor-driven equivalence: grok (not in registry)', () => {
-  test('grok default → ~/.agents', () => {
+describe('descriptor-driven equivalence: grok and vibe', () => {
+  test('grok default → ~/.grok', () => {
     const saved = clearAllEnvKeys();
     try {
-      assert.strictEqual(getGlobalConfigDir('grok'), path.join(HOME, '.agents'));
+      assert.strictEqual(getGlobalConfigDir('grok'), path.join(HOME, '.grok'));
     } finally {
       restoreEnvKeys(saved);
     }
   });
 
-  test('grok: GROK_AGENTS_HOME override', () => {
-    withEnv({ GROK_AGENTS_HOME: '/custom/grok-agents' }, () => {
-      assert.strictEqual(String(getGlobalConfigDir('grok')).replace(/\\/g, '/'), '/custom/grok-agents');
+  test('grok: GROK_HOME override', () => {
+    withEnv({ GROK_HOME: '/custom/grok-home' }, () => {
+      assert.strictEqual(String(getGlobalConfigDir('grok')).replace(/\\/g, '/'), '/custom/grok-home');
     });
   });
 
-  test('grok: GROK_AGENTS_HOME tilde expansion', () => {
-    withEnv({ GROK_AGENTS_HOME: '~/grok' }, () => {
-      assert.strictEqual(getGlobalConfigDir('grok'), path.join(HOME, 'grok'));
+  test('grok: GROK_HOME tilde expansion', () => {
+    withEnv({ GROK_HOME: '~/grok-home' }, () => {
+      assert.strictEqual(getGlobalConfigDir('grok'), path.join(HOME, 'grok-home'));
+    });
+  });
+
+  test('vibe default → ~/.vibe', () => {
+    const saved = clearAllEnvKeys();
+    try {
+      assert.strictEqual(getGlobalConfigDir('vibe'), path.join(HOME, '.vibe'));
+    } finally {
+      restoreEnvKeys(saved);
+    }
+  });
+
+  test('vibe: VIBE_HOME override and tilde expansion', () => {
+    withEnv({ VIBE_HOME: '~/vibe-home' }, () => {
+      assert.strictEqual(getGlobalConfigDir('vibe'), path.join(HOME, 'vibe-home'));
     });
   });
 });
@@ -1147,7 +1164,7 @@ describe('descriptor-driven global skills base', () => {
 
 // ── GOLDEN PARITY: getGlobalConfigDir via process.env for every non-probe registry runtime ──
 
-describe('descriptor-driven parity: 13 non-probe registry runtimes × no-env-vars = golden defaults', () => {
+describe('descriptor-driven parity: registry runtimes × no-env-vars = golden defaults', () => {
   // This is the hardest assertion: it drives getGlobalConfigDir() (which calls
   // the registry internally) and compares against GOLDEN_DEFAULTS captured from
   // the old switch. Any discrepancy means a regression.
@@ -1156,9 +1173,8 @@ describe('descriptor-driven parity: 13 non-probe registry runtimes × no-env-var
   // with ~/.gemini/antigravity-ide or ~/.gemini/antigravity-cli (but not
   // ~/.gemini/antigravity) gets a different result. Probe scenarios are covered in
   // the dot-home-nested suite with injected existsSync.
-  // grok is excluded because it is not in the registry (hardcoded branch).
   const registryRuntimes = Object.keys(GOLDEN_DEFAULTS).filter(
-    r => r !== 'grok' && r !== 'antigravity',
+    r => r !== 'antigravity',
   );
 
   for (const runtime of registryRuntimes) {
@@ -1245,7 +1261,6 @@ describe('bug #3126: runtime-homes getGlobalConfigDir — defaults', () => {
   for (const [runtime, expected] of defaults) {
     test(`${runtime} default configDir`, () => {
       // Derive env-var list from the registry so new runtimes are auto-covered.
-      // GROK_AGENTS_HOME is kept explicitly (grok has no registry entry).
       const { runtimes: _reg3126 } = require(path.join(ROOT, 'gsd-core', 'bin', 'lib', 'capability-registry.cjs'));
       const _regEnvKeys3126 = Object.values(_reg3126).flatMap((r) => {
         const ch = r.runtime?.configHome;
@@ -1254,7 +1269,7 @@ describe('bug #3126: runtime-homes getGlobalConfigDir — defaults', () => {
         const skillsEnvs = ch.skillsHome && Array.isArray(ch.skillsHome.env) ? ch.skillsHome.env : [];
         return [...envs, ...skillsEnvs];
       });
-      const envKeys = [...new Set([..._regEnvKeys3126, 'GROK_AGENTS_HOME', 'XDG_CONFIG_HOME'])];
+      const envKeys = [...new Set([..._regEnvKeys3126, 'XDG_CONFIG_HOME'])];
       const saved = {};
       for (const k of envKeys) { saved[k] = process.env[k]; delete process.env[k]; }
       try {

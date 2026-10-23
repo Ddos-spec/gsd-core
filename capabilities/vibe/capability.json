@@ -1,0 +1,77 @@
+{
+  "id": "vibe",
+  "role": "runtime",
+  "version": "1.18.0",
+  "title": "Mistral Vibe",
+  "description": "Mistral Vibe Code CLI — GSD commands are installed as invocable Agent Skills under ~/.vibe/skills; native agent profiles and hooks require a separate projection.",
+  "tier": "core",
+  "requires": [],
+  "engines": {
+    "gsd": ">=1.6.0"
+  },
+  "runtime": {
+    "configHome": {
+      "kind": "dot-home",
+      "name": ".vibe",
+      "env": ["VIBE_HOME"]
+    },
+    "localConfigDir": ".vibe",
+    "configFormat": "none",
+    "artifactLayout": {
+      "global": [
+        {
+          "kind": "skills",
+          "destSubpath": "skills",
+          "prefix": "gsd-",
+          "nesting": "flat",
+          "recursive": false,
+          "converter": "convertClaudeCommandToVibeSkill"
+        }
+      ],
+      "local": [
+        {
+          "kind": "skills",
+          "destSubpath": "skills",
+          "prefix": "gsd-",
+          "nesting": "flat",
+          "recursive": false,
+          "converter": "convertClaudeCommandToVibeSkill"
+        }
+      ]
+    },
+    "triggerPrecedence": ["skills", "commands"],
+    "commandStyle": "slash-hyphen",
+    "hooksSurface": "none",
+    "extensionEvents": "none",
+    "sandboxTier": "none",
+    "supportTier": 2,
+    "installSurface": "profile-marker-only",
+    "writesSharedSettings": false,
+    "permissionWriter": null,
+    "extendedHookEvents": [],
+    "hostIntegration": {
+      "embeddingMode": "declarative",
+      "commandSurface": "slash-file",
+      "dispatch": {
+        "namedDispatch": "undocumented",
+        "nested": "undocumented",
+        "maxDepth": "undocumented",
+        "background": "undocumented",
+        "subagentToolkit": "full",
+        "backgroundDispatch": "undocumented",
+        "isolation": "undocumented",
+        "maxConcurrency": "undocumented"
+      },
+      "modelMode": "passive",
+      "hookBus": "host",
+      "stateIO": "filesystem",
+      "transport": "mcp",
+      "runtime": "python",
+      "effortSurface": "undocumented"
+    },
+    "hostBehaviors": {
+      "unsupportedFeatures": ["context-warnings", "phase-lifecycle-display"],
+      "contentRewriteProfile": "slash-tilde-restore"
+    }
+  }
+}

@@ -37,7 +37,6 @@ import fs from 'node:fs';
 import {
   assertKnownRuntime,
   isKnownRuntimeId,
-  LEGACY_NON_REGISTRY_RUNTIME_HOMES,
   LEGACY_NON_REGISTRY_RUNTIME_IDS as POLICY_LEGACY_NON_REGISTRY_RUNTIME_IDS,
 } from './runtime-name-policy.cjs';
 
@@ -177,6 +176,7 @@ interface RuntimeArtifactKindDescriptor {
   // ADR-1239 upgrade 3 (#2088): optional split-home override (relative to
   // os.homedir()), e.g. Codex skills → ".agents". Absent for most runtimes.
   home?: string;
+  homeEnv?: string;
 }
 
 interface RuntimeDescriptor {
@@ -202,40 +202,17 @@ function getRegistry(): { runtimes: Record<string, { runtime?: RuntimeDescriptor
 }
 
 /**
- * Legacy runtime ids that have a genuine, dedicated resolution branch
- * elsewhere in this module but no capability-registry descriptor (#3024
- * review BLOCKER, finding 1).
- *
- * `isRegisteredRuntimeId`'s real contract is "does this id resolve to a
- * real, runtime-specific path?", not "is it a key in the registry map" —
- * registry membership is only a proxy for that, and the proxy is wrong for
- * `grok`: `getGlobalConfigDir` has a live hardcoded branch for it (`~/.agents`,
- * overridable via `GROK_AGENTS_HOME`), predating the capability-registry
- * descriptor system, and it is documented end-user-facing surface
- * (pre-fix `gsd-core/workflows/sync-skills.md` listed it explicitly, and
- * `docs/discussions/grok-build-support-2026-05.md` records the support
- * decision). Rejecting it here would silently remove working, documented
- * `--skills-root`/`sync-skills` support for a runtime that never regressed.
- *
- * This set is enumerated by hand, not derived, and MUST stay in lockstep
- * with `getGlobalConfigDir`'s hardcoded branches: as of #3024, `grok` is
- * the ONLY id in this position (verified by reading the full function body
- * — every other unregistered id there falls through to the claude
- * fallback, which is the behavior this validator exists to reject). Do
- * NOT add an id here just because it "should" work — add it only after
- * confirming `getGlobalConfigDir` has a real dedicated branch for it, the
- * way `grok`'s is confirmed above. Do not "clean this up" by removing it;
- * that is exactly the regression this constant guards against.
+ * Legacy runtime ids kept for compatibility while runtimes move into the
+ * capability registry. Grok Build is now registry-backed; keep this set empty
+ * until another real legacy runtime needs the compatibility path.
  */
 export const LEGACY_NON_REGISTRY_RUNTIME_IDS: ReadonlySet<string> = POLICY_LEGACY_NON_REGISTRY_RUNTIME_IDS;
 
 /**
  * True when `runtime` is a real runtime id with a genuine, runtime-specific
  * resolution path — either a registered id in the capability registry
- * (`capability-registry.cjs`'s `runtimes` object) or one of the small,
- * explicitly named `LEGACY_NON_REGISTRY_RUNTIME_IDS` set (currently just
- * `grok`) that resolves via a dedicated hardcoded branch instead of a
- * registry descriptor.
+ * (`capability-registry.cjs`'s `runtimes` object) or one of the explicitly
+ * named `LEGACY_NON_REGISTRY_RUNTIME_IDS` set.
  *
  * Guarded with an own-property lookup — never a bare index — so a
  * prototype-chain id (`__proto__`, `constructor`, `prototype`, `toString`,
@@ -633,14 +610,6 @@ export function getGlobalConfigDir(runtime: string, explicitDir?: string | null)
   assertKnownRuntime(runtime);
   if (explicitDir) return expandTilde(explicitDir);
 
-  // ── Legacy non-registry runtimes (grok): table-driven, not registry-backed ─
-  if (Object.prototype.hasOwnProperty.call(LEGACY_NON_REGISTRY_RUNTIME_HOMES, runtime)) {
-    const legacy = LEGACY_NON_REGISTRY_RUNTIME_HOMES[runtime];
-    const env = process.env as Record<string, string | undefined>;
-    const override = env[legacy.env];
-    return override ? expandTilde(override) : path.join(os.homedir(), ...legacy.dir);
-  }
-
   // ── Descriptor-driven: look up in capability-registry ────────────────────
   const { runtimes } = getRegistry();
 
@@ -690,7 +659,9 @@ export function getGlobalSkillsBase(runtime: string): string | null {
   // _resolveSkillsRootDir). Without this, `--skills-root` and the sync-skills
   // workflow would look under configHome/skills while skills live under ~/.agents.
   if (globalSkillsKind?.home && globalSkillsKind?.destSubpath) {
-    return path.join(os.homedir(), globalSkillsKind.home, globalSkillsKind.destSubpath);
+    const override = globalSkillsKind.homeEnv ? process.env[globalSkillsKind.homeEnv] : undefined;
+    const base = override && override.trim() ? expandTilde(override.trim()) : path.join(os.homedir(), globalSkillsKind.home);
+    return path.join(base, globalSkillsKind.destSubpath);
   }
   if (descriptor?.configHome && globalSkillsKind?.destSubpath) {
     return resolveSkillsBaseFromDescriptor(
