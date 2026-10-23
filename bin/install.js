@@ -12934,8 +12934,11 @@ function install(isGlobal, runtime = DEFAULT_RUNTIME, options = {}) {
           }
           throw err;
         }
-        const matches = content.match(/(?:~|\$HOME)\/\.claude\b/g);
-        if (matches) {
+        // Only `@` GSD-core includes are runtime-bound paths. Plain `.claude`
+        // references can be valid cross-runtime probes or descriptions of the
+        // Claude Code surface (for example in gsd-discuss-phase/gsd-surface).
+        const matches = runtimeArtifactConversion.findUnresolvedClaudeGsdIncludes(content);
+        if (matches.length > 0) {
           leakedPaths.push({ file: relPath, count: matches.length });
         }
       }

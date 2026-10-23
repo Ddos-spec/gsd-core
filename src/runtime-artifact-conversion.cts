@@ -3441,6 +3441,15 @@ function retargetInstalledIncludes(
   return result;
 }
 
+/** Find Claude GSD includes that a non-Claude runtime would load from the wrong home. */
+function findUnresolvedClaudeGsdIncludes(content: string): string[] {
+  if (typeof content !== 'string' || content.length === 0) return [];
+  return Array.from(
+    content.matchAll(/^\s*@(?:~|\$HOME)\/\.claude\/gsd-core(?:\/[^\s]*)?/gm),
+    ([include]) => include.trim(),
+  );
+}
+
 /** Return a safe project-relative prefix for a resolved install target. */
 function projectRelativePrefixFromProjectRoot(projectRoot: unknown, resolvedTarget: unknown): string {
   if (typeof projectRoot !== 'string' || typeof resolvedTarget !== 'string') return '';
@@ -4563,4 +4572,5 @@ export = {
   NON_CLAUDE_RUNTIMES,
   // #5123: post-install include retarget (config-dir aware; Kimi prose path)
   retargetInstalledIncludes,
+  findUnresolvedClaudeGsdIncludes,
 };

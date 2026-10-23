@@ -9,7 +9,7 @@ process.env.GSD_TEST_MODE = '1';
 const { runtimes } = require('../gsd-core/bin/lib/capability-registry.cjs');
 const { getGlobalConfigDir, getGlobalSkillsBase } = require('../gsd-core/bin/lib/runtime-homes.cjs');
 const { resolveRuntimeArtifactLayout } = require('../gsd-core/bin/lib/runtime-artifact-layout.cjs');
-const { convertClaudeCommandToGrokSkill, convertClaudeCommandToVibeSkill, convertClaudeCommandToAntigravityCliSkill } = require('../gsd-core/bin/lib/runtime-artifact-conversion.cjs');
+const { convertClaudeCommandToGrokSkill, convertClaudeCommandToVibeSkill, convertClaudeCommandToAntigravityCliSkill, findUnresolvedClaudeGsdIncludes } = require('../gsd-core/bin/lib/runtime-artifact-conversion.cjs');
 const { allRuntimes, selectRuntimesFromArgs } = require('../bin/install.js');
 
 function withEnv(overrides, fn) {
@@ -30,6 +30,20 @@ function withEnv(overrides, fn) {
 }
 
 describe('first-class Grok Build and Mistral Vibe runtime homes', () => {
+  test('detects only unresolved Claude GSD include directives, not portable cross-runtime references', () => {
+    const content = [
+      '@~/.claude/gsd-core/workflows/help.md',
+      '@$HOME/.claude/gsd-core/references/ui-brand.md',
+      'set -- "${CLAUDE_CONFIG_DIR:-$HOME/.claude}" "$HOME/.grok" "${VIBE_HOME:-$HOME/.vibe}";',
+      'Claude skills are stored in ~/.claude/skills for Claude Code.',
+    ].join('\n');
+
+    assert.deepEqual(findUnresolvedClaudeGsdIncludes(content), [
+      '@~/.claude/gsd-core/workflows/help.md',
+      '@$HOME/.claude/gsd-core/references/ui-brand.md',
+    ]);
+  });
+
   test('registers Grok and resolves skills under its native home, separate from Codex', () => {
     withEnv({ GROK_HOME: undefined }, () => {
       assert.ok(runtimes.grok?.runtime, 'Grok Build must have a runtime descriptor');

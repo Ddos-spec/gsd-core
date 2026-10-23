@@ -681,6 +681,8 @@ describe('installRuntimeArtifacts — --all target runtimes keep runtime-specifi
     });
     assert.equal(result.exitCode, 0,
       `Grok/Vibe/Antigravity CLI install failed (outcome=${result.outcome}):\n${result.stdout}\n${result.stderr}`);
+    assert.doesNotMatch(`${result.stdout}\n${result.stderr}`, /Found \d+ unreplaced \.claude path reference\(s\)/,
+      'portable Claude paths in cross-runtime skills must not be reported as install leaks');
 
     for (const runtime of ['grok', 'vibe', 'antigravity-cli']) {
       const skillPath = path.join(getGlobalSkillsBase(runtime), 'gsd-help', 'SKILL.md');
